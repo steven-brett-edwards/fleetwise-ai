@@ -1,0 +1,39 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.db
+*.db-shm
+*.db-wal
+
+## User secrets
+secrets.json
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## VS / Rider
+.vs/
+.idea/
+*.DotSettings.user
+
+## Node / Angular
+node_modules/
+dist/
+.angular/
+.sass-cache/
+tmp/
+
+## Environment
+.env
+.env.local
+appsettings.*.local.json
+
+## OS
+.DS_Store
+Thumbs.db
