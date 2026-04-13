@@ -34,6 +34,10 @@ tmp/
 .env.local
 appsettings.*.local.json
 
+## Test coverage
+TestResults/
+coveragereport/
+
 ## OS
 .DS_Store
 Thumbs.db

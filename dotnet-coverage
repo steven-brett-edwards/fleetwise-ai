@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$REPO_ROOT"
+
+echo "Cleaning previous coverage results..."
+find "$REPO_ROOT" -type d -name TestResults -exec rm -rf {} + 2>/dev/null || true
+rm -rf coveragereport
+
+echo "Running tests with coverage collection..."
+dotnet test --collect:"XPlat Code Coverage" --settings coverage.runsettings
+
+echo "Generating coverage report..."
+DOTNET_ROOT=/opt/homebrew/Cellar/dotnet@9/9.0.115/libexec \
+  reportgenerator \
+    -reports:"**/coverage.cobertura.xml" \
+    -targetdir:coveragereport \
+    -reporttypes:"Html;TextSummary"
+
+echo ""
+cat coveragereport/Summary.txt
+echo ""
+echo "Opening HTML report..."
+open coveragereport/index.html
