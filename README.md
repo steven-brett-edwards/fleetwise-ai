@@ -2,6 +2,8 @@
 
 > An AI-powered fleet maintenance assistant built with Angular, .NET, and Microsoft Semantic Kernel
 
+> Under active construction!
+
 ## What is This?
 
 FleetWise AI is a full-stack web application that helps fleet managers interact with their fleet data using natural language. It combines a traditional Angular + .NET application with Microsoft's Semantic Kernel to create an intelligent assistant that can query live fleet data and reference maintenance documentation.

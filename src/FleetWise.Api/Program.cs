@@ -1,6 +1,7 @@
 using FleetWise.Infrastructure.Data;
 using FleetWise.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,59 @@ builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
 builder.Services.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
 builder.Services.AddScoped<IPartRepository, PartRepository>();
+
+// AI Provider -- reads "AiProvider" from config to decide which LLM backend to use.
+// All three providers use the OpenAI connector -- Ollama exposes an OpenAI-compatible API.
+var aiProvider = builder.Configuration["AiProvider"] ?? "Ollama";
+
+builder.Services.AddScoped<Kernel>(sp =>
+{
+    var kernelBuilder = Kernel.CreateBuilder();
+
+    switch (aiProvider)
+    {
+        case "Ollama":
+            var ollamaEndpoint = builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
+            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "phi3:mini";
+            kernelBuilder.AddOpenAIChatCompletion(
+                modelId: ollamaModel,
+                apiKey: "ollama",  // Ollama ignores the API key, but the SDK requires a non-null value
+                endpoint: new Uri($"{ollamaEndpoint}/v1/"));
+            break;
+
+        case "AzureOpenAI":
+            var azureEndpoint = builder.Configuration["AzureOpenAI:Endpoint"]
+                ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required when AiProvider is AzureOpenAI");
+            var azureModel = builder.Configuration["AzureOpenAI:ChatModel"] ?? "gpt-4o-mini";
+            var azureApiKey = builder.Configuration["AzureOpenAI:ApiKey"]
+                ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required when AiProvider is AzureOpenAI");
+            kernelBuilder.AddAzureOpenAIChatCompletion(
+                deploymentName: azureModel,
+                endpoint: azureEndpoint,
+                apiKey: azureApiKey);
+            break;
+
+        case "OpenAI":
+            var openAiModel = builder.Configuration["OpenAI:ChatModel"] ?? "gpt-4o-mini";
+            var openAiApiKey = builder.Configuration["OpenAI:ApiKey"]
+                ?? throw new InvalidOperationException("OpenAI:ApiKey is required when AiProvider is OpenAI");
+            kernelBuilder.AddOpenAIChatCompletion(
+                modelId: openAiModel,
+                apiKey: openAiApiKey);
+            break;
+
+        default:
+            throw new InvalidOperationException($"Unknown AiProvider: {aiProvider}. Valid values: Ollama, AzureOpenAI, OpenAI");
+    }
+
+    var kernel = kernelBuilder.Build();
+
+    // Plugins will be registered here in Step 3
+
+    return kernel;
+});
+
+builder.Logging.AddConsole();
 
 // Controllers + Swagger
 builder.Services.AddControllers()
