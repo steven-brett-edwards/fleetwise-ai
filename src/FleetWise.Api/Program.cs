@@ -1,4 +1,5 @@
 using FleetWise.Api.Plugins;
+using FleetWise.Api.Services;
 using FleetWise.Infrastructure.Data;
 using FleetWise.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ builder.Services.AddScoped<Kernel>(serviceProvider =>
     {
         case "Ollama":
             var ollamaEndpoint = builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
-            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "llama3.1:8b";
+            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "qwen2.5:3b";
             kernelBuilder.AddOpenAIChatCompletion(
                 modelId: ollamaModel,
                 apiKey: "ollama",  // Ollama ignores the API key, but the SDK requires a non-null value
@@ -77,6 +78,9 @@ builder.Services.AddScoped<Kernel>(serviceProvider =>
 
     return kernel;
 });
+
+// Chat orchestration -- manages conversation history and function call tracking
+builder.Services.AddScoped<IChatOrchestrationService, ChatOrchestrationService>();
 
 builder.Logging.AddConsole();
 
