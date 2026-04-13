@@ -73,8 +73,38 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
         ChatRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // Streaming implementation will be added in Step 6
-        var response = await ProcessMessageAsync(request);
-        yield return response.Response;
+        var conversationId = request.ConversationId ?? Guid.NewGuid().ToString();
+        var history = Conversations.GetOrAdd(conversationId, _ =>
+        {
+            var h = new ChatHistory();
+            h.AddSystemMessage(SystemPrompt);
+            return h;
+        });
+
+        history.AddUserMessage(request.Message);
+
+        var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var executionSettings = new OpenAIPromptExecutionSettings
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+        };
+
+        logger.LogInformation("Streaming message for conversation {ConversationId}", conversationId);
+
+        // GetStreamingChatMessageContentsAsync returns chunks as they arrive.
+        // SK handles the function calling loop internally;
+        // tool calls execute before text chunks start flowing.
+        var fullResponse = new System.Text.StringBuilder();
+        await foreach (var chunk in chatCompletionService.GetStreamingChatMessageContentsAsync(
+            history, executionSettings, kernel, cancellationToken))
+        {
+            if (!string.IsNullOrEmpty(chunk.Content))
+            {
+                fullResponse.Append(chunk.Content);
+                yield return chunk.Content;
+            }
+        }
+
+        history.AddAssistantMessage(fullResponse.ToString());
     }
 }

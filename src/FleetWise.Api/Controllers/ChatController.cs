@@ -15,4 +15,22 @@ public class ChatController(IChatOrchestrationService chatService) : ControllerB
         var response = await chatService.ProcessMessageAsync(request);
         return Ok(response);
     }
+
+    /// <summary>Send a message and receive a streaming response via Server-Sent Events.</summary>
+    [HttpPost("stream")]
+    public async Task Stream([FromBody] ChatRequest request, CancellationToken cancellationToken)
+    {
+        Response.ContentType = "text/event-stream";
+        Response.Headers.CacheControl = "no-cache";
+        Response.Headers.Connection = "keep-alive";
+
+        await foreach (var chunk in chatService.StreamMessageAsync(request, cancellationToken))
+        {
+            await Response.WriteAsync($"data: {chunk}\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
+        }
+
+        await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
+        await Response.Body.FlushAsync(cancellationToken);
+    }
 }
