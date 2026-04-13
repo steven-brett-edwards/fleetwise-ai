@@ -107,8 +107,13 @@ public class MaintenancePluginTests
         overdueMaintenanceJsonResponse.Should().Contain("Found 2 overdue maintenance schedules");
         overdueMaintenanceJsonResponse.Should().Contain("V-2019-0001");
         overdueMaintenanceJsonResponse.Should().Contain("2019 Ford F-150 XL");
-        overdueMaintenanceJsonResponse.Should().Contain("OilChange");
         overdueMaintenanceJsonResponse.Should().Contain("92000");
+
+        overdueMaintenanceJsonResponse.Should().Contain("OilChange"); // First schedule
+        overdueMaintenanceJsonResponse.Should().Contain("90000");
+
+        overdueMaintenanceJsonResponse.Should().Contain("TireRotation"); // Second schedule
+        overdueMaintenanceJsonResponse.Should().Contain("88000");
     }
 
     // ── get_upcoming_maintenance ─────────────────────────────────────
@@ -252,9 +257,14 @@ public class MaintenancePluginTests
         // Result
         var maintenanceHistoryJsonResponse = maintenanceHistoryResult.ToString();
         maintenanceHistoryJsonResponse.Should().Contain("Found 2 maintenance records for vehicle ID 1");
-        maintenanceHistoryJsonResponse.Should().Contain("OilChange");
+
+        maintenanceHistoryJsonResponse.Should().Contain("OilChange"); // First record
         maintenanceHistoryJsonResponse.Should().Contain("Mike Torres");
         maintenanceHistoryJsonResponse.Should().Contain("89.99");
+
+        maintenanceHistoryJsonResponse.Should().Contain("TireRotation"); // Second record
+        maintenanceHistoryJsonResponse.Should().Contain("Sarah Chen");
+        maintenanceHistoryJsonResponse.Should().Contain("45");
     }
 
     // ── get_maintenance_cost_summary ─────────────────────────────────
@@ -343,8 +353,15 @@ public class MaintenancePluginTests
         // Result
         var costSummaryJsonResponse = costSummaryResult.ToString();
         costSummaryJsonResponse.Should().Contain("Maintenance costs grouped by type (3 groups)");
-        costSummaryJsonResponse.Should().Contain("OilChange");
+
+        costSummaryJsonResponse.Should().Contain("OilChange"); // First group
         costSummaryJsonResponse.Should().Contain("2500");
+
+        costSummaryJsonResponse.Should().Contain("BrakeInspection"); // Second group
+        costSummaryJsonResponse.Should().Contain("1800");
+
+        costSummaryJsonResponse.Should().Contain("TireRotation"); // Third group
+        costSummaryJsonResponse.Should().Contain("900");
     }
 
     [Fact]

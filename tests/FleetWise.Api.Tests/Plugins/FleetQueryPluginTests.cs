@@ -212,8 +212,14 @@ public class FleetQueryPluginTests
         // Result
         var activeFordSearchJsonResponse = searchResultForActiveFords.ToString();
         activeFordSearchJsonResponse.Should().Contain("Found 2 vehicles matching criteria");
-        activeFordSearchJsonResponse.Should().Contain("V-2019-0001");
-        activeFordSearchJsonResponse.Should().Contain("V-2020-0005");
+
+        activeFordSearchJsonResponse.Should().Contain("V-2019-0001"); // First vehicle
+        activeFordSearchJsonResponse.Should().Contain("F-150 XL");
+        activeFordSearchJsonResponse.Should().Contain("Public Works");
+
+        activeFordSearchJsonResponse.Should().Contain("V-2020-0005"); // Second vehicle
+        activeFordSearchJsonResponse.Should().Contain("Transit 150");
+        activeFordSearchJsonResponse.Should().Contain("Parks and Recreation");
     }
 
     [Fact]
@@ -326,7 +332,18 @@ public class FleetQueryPluginTests
             "FleetQuery", "search_vehicles");
 
         // Result
-        unfilteredSearchResult.ToString().Should().Contain("Found 3 vehicles matching criteria");
+        var unfilteredSearchJsonResponse = unfilteredSearchResult.ToString();
+        unfilteredSearchJsonResponse.Should().Contain("Found 3 vehicles matching criteria");
+
+        unfilteredSearchJsonResponse.Should().Contain("V-2019-0001"); // First vehicle
+        unfilteredSearchJsonResponse.Should().Contain("Ford");
+
+        unfilteredSearchJsonResponse.Should().Contain("V-2020-0002"); // Second vehicle
+        unfilteredSearchJsonResponse.Should().Contain("Chevrolet");
+
+        unfilteredSearchJsonResponse.Should().Contain("V-2021-0003"); // Third vehicle
+        unfilteredSearchJsonResponse.Should().Contain("Tesla");
+
         _mockVehicleRepository.Verify(r => r.SearchAsync(null, null, null, null, null), Times.Once);
     }
 

@@ -151,6 +151,15 @@ public class VehiclesControllerTests
                 MileageAtService = 85000,
                 Description = "Full synthetic oil change",
                 Cost = 89.99m, TechnicianName = "Mike Torres"
+            },
+            new()
+            {
+                Id = 2, VehicleId = 1, Vehicle = existingVehicle,
+                MaintenanceType = MaintenanceType.TireRotation,
+                PerformedDate = new DateTime(2025, 3, 15),
+                MileageAtService = 80000,
+                Description = "Rotated all four tires",
+                Cost = 45.00m, TechnicianName = "Sarah Chen"
             }
         };
 
@@ -166,7 +175,7 @@ public class VehiclesControllerTests
         // Result
         var okResult = Assert.IsType<OkObjectResult>(actionResult);
         var returnedRecords = Assert.IsType<List<MaintenanceRecord>>(okResult.Value);
-        returnedRecords.Should().HaveCount(1);
+        returnedRecords.Should().HaveCount(2);
     }
 
     [Fact]

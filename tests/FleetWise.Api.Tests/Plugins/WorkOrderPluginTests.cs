@@ -104,11 +104,16 @@ public class WorkOrderPluginTests
         // Result
         var openWorkOrdersJsonResponse = openWorkOrdersResult.ToString();
         openWorkOrdersJsonResponse.Should().Contain("Found 2 open work orders");
-        openWorkOrdersJsonResponse.Should().Contain("WO-2026-00025");
         openWorkOrdersJsonResponse.Should().Contain("V-2019-0001");
         openWorkOrdersJsonResponse.Should().Contain("2019 Ford F-150 XL");
+
+        openWorkOrdersJsonResponse.Should().Contain("WO-2026-00025"); // First order details
         openWorkOrdersJsonResponse.Should().Contain("Critical");
         openWorkOrdersJsonResponse.Should().Contain("Mike Torres");
+
+        openWorkOrdersJsonResponse.Should().Contain("WO-2026-00030"); // Second order details
+        openWorkOrdersJsonResponse.Should().Contain("Medium");
+        openWorkOrdersJsonResponse.Should().Contain("Sarah Chen");
     }
 
     // ── get_work_order_details ───────────────────────────────────────
@@ -223,9 +228,14 @@ public class WorkOrderPluginTests
         // Result
         var partsBelowThresholdJsonResponse = partsResult.ToString();
         partsBelowThresholdJsonResponse.Should().Contain("Found 2 parts below reorder threshold");
-        partsBelowThresholdJsonResponse.Should().Contain("BRK-PAD-001");
+
+        partsBelowThresholdJsonResponse.Should().Contain("BRK-PAD-001"); // First part
         partsBelowThresholdJsonResponse.Should().Contain("Brake Pads (Front)");
         partsBelowThresholdJsonResponse.Should().Contain("Bin A-12");
+
+        partsBelowThresholdJsonResponse.Should().Contain("FLT-OIL-001"); // Second part
+        partsBelowThresholdJsonResponse.Should().Contain("Oil Filter");
+        partsBelowThresholdJsonResponse.Should().Contain("Bin B-03");
     }
 
     [Fact]
