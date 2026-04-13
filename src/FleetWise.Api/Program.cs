@@ -1,3 +1,4 @@
+using FleetWise.Api.Plugins;
 using FleetWise.Infrastructure.Data;
 using FleetWise.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ builder.Services.AddScoped<IPartRepository, PartRepository>();
 // All three providers use the OpenAI connector -- Ollama exposes an OpenAI-compatible API.
 var aiProvider = builder.Configuration["AiProvider"] ?? "Ollama";
 
-builder.Services.AddScoped<Kernel>(sp =>
+builder.Services.AddScoped<Kernel>(serviceProvider =>
 {
     var kernelBuilder = Kernel.CreateBuilder();
 
@@ -28,7 +29,7 @@ builder.Services.AddScoped<Kernel>(sp =>
     {
         case "Ollama":
             var ollamaEndpoint = builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
-            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "phi3:mini";
+            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "llama3.1:8b";
             kernelBuilder.AddOpenAIChatCompletion(
                 modelId: ollamaModel,
                 apiKey: "ollama",  // Ollama ignores the API key, but the SDK requires a non-null value
@@ -62,7 +63,10 @@ builder.Services.AddScoped<Kernel>(sp =>
 
     var kernel = kernelBuilder.Build();
 
-    // Plugins will be registered here in Step 3
+    // Import plugins -- SK reads [KernelFunction] + [Description] attributes and
+    // sends them to the LLM so it can decide which functions to call.
+    var vehicleRepo = serviceProvider.GetRequiredService<IVehicleRepository>();
+    kernel.ImportPluginFromObject(new FleetQueryPlugin(vehicleRepo), "FleetQuery");
 
     return kernel;
 });
