@@ -39,13 +39,23 @@ This project is under active development.
 - [x] Seed data representing a realistic 35-vehicle municipal fleet
 - [x] REST API with 9 endpoints
 - [x] Angular frontend scaffold with Material, routing, and services
-- [ ] Semantic Kernel plugins with function calling
+- [x] Semantic Kernel plugins with function calling (11 functions across 3 plugins)
+- [x] Chat orchestration service with conversation history
+- [x] Sync and streaming (SSE) chat endpoints
+- [x] Provider-swap architecture (Ollama / Azure OpenAI / OpenAI via config)
+- [x] 68 unit tests with 100% coverage on all API components
 - [ ] RAG pipeline with maintenance documentation
-- [ ] AI chat interface with streaming
+- [ ] Angular chat UI with streaming responses
 - [ ] Dashboard and vehicle management UI
-- [ ] Unit and integration tests
 - [ ] CI/CD pipeline
-- [ ] Documentation and architecture diagrams
+
+## Coming Next
+
+**Angular Chat UI** -- connecting the frontend to the AI backend with a chat component that consumes the SSE streaming endpoint and displays real-time responses.
+
+**RAG (Retrieval-Augmented Generation)** -- a document ingestion pipeline for fleet manuals, SOPs, and warranty documentation. The LLM will be able to cite actual maintenance docs when answering questions, not just query database tables. Vector embeddings powered by Ollama's `nomic-embed-text` model.
+
+**Production polish** -- Azure OpenAI provider swap, integration tests, error handling, and deployment configuration.
 
 ## License
 
