@@ -60,7 +60,7 @@ This project is under active development.
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 20+](https://nodejs.org/)
-- [Ollama](https://ollama.com/) with a chat model pulled (e.g. `ollama pull llama3.2`)
+- [Ollama](https://ollama.com/) with a chat model pulled (e.g. `ollama pull qwen2.5:3b`)
 
 ### Backend
 
@@ -83,7 +83,13 @@ The Angular app starts at `http://localhost:4200` and proxies API requests to th
 
 ### Ollama
 
-Make sure Ollama is running (`ollama serve`) with a model available. The app defaults to `llama3.2` — configure the model name in `appsettings.Development.json` if using a different one.
+Make sure Ollama is running (`ollama serve`) with a chat model pulled:
+
+```bash
+ollama pull qwen2.5:3b
+```
+
+The app defaults to `qwen2.5:3b` via Ollama. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
 
 ## Coming Next
 
