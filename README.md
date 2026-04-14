@@ -45,13 +45,49 @@ This project is under active development.
 - [x] Provider-swap architecture (Ollama / Azure OpenAI / OpenAI via config)
 - [x] 68 unit tests with 100% coverage on all API components
 - [ ] RAG pipeline with maintenance documentation
-- [ ] Angular chat UI with streaming responses
-- [ ] Dashboard and vehicle management UI
+- [x] Angular chat UI with SSE streaming responses
+- [x] Dashboard with fleet summary, overdue/upcoming maintenance
+- [x] Vehicle list and detail views with filtering
+- [x] Work order list and detail views
+- [ ] Mobile responsive layout
+- [ ] Frontend unit tests
+- [ ] RAG pipeline with maintenance documentation
 - [ ] CI/CD pipeline
+
+## Running Locally
+
+### Prerequisites
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [Node.js 20+](https://nodejs.org/)
+- [Ollama](https://ollama.com/) with a chat model pulled (e.g. `ollama pull llama3.2`)
+
+### Backend
+
+```bash
+cd src/FleetWise.Api
+dotnet run
+```
+
+The API starts at `http://localhost:5100`. On first run, EF Core automatically creates and seeds the SQLite database with a 35-vehicle municipal fleet.
+
+### Frontend
+
+```bash
+cd src/fleetwise-client
+npm install
+npx ng serve
+```
+
+The Angular app starts at `http://localhost:4200` and proxies API requests to the backend.
+
+### Ollama
+
+Make sure Ollama is running (`ollama serve`) with a model available. The app defaults to `llama3.2` — configure the model name in `appsettings.Development.json` if using a different one.
 
 ## Coming Next
 
-**Angular Chat UI** -- connecting the frontend to the AI backend with a chat component that consumes the SSE streaming endpoint and displays real-time responses.
+**Mobile responsive layout** -- sidenav collapses to hamburger menu on small screens, tables scroll horizontally.
 
 **RAG (Retrieval-Augmented Generation)** -- a document ingestion pipeline for fleet manuals, SOPs, and warranty documentation. The LLM will be able to cite actual maintenance docs when answering questions, not just query database tables. Vector embeddings powered by Ollama's `nomic-embed-text` model.
 

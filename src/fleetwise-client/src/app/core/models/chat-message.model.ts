@@ -2,7 +2,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  sourcesUsed?: string[];
+  functionsUsed?: string[];
 }
 
 export interface ChatRequest {
@@ -13,5 +13,5 @@ export interface ChatRequest {
 export interface ChatResponse {
   response: string;
   conversationId: string;
-  sourcesUsed: string[];
+  functionsUsed: string[];
 }

@@ -1,0 +1,75 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.stat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+
+  &.total { color: #1565c0; }
+  &.active { color: #2e7d32; }
+  &.inshop { color: #f57f17; }
+  &.work-orders { color: #e65100; }
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.tables-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-message {
+  color: rgba(0, 0, 0, 0.6);
+  padding: 16px 0;
+}
+
+table {
+  width: 100%;
+}
+
+a {
+  color: #1565c0;
+  font-weight: 500;
+}

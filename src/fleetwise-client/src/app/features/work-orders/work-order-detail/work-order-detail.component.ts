@@ -1,8 +1,54 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { WorkOrderService } from '../../../core/services/work-order.service';
+import { WorkOrder } from '../../../core/models/work-order.model';
 
 @Component({
   selector: 'app-work-order-detail',
   standalone: true,
-  template: '<div class="content-container"><h1>Work Order Detail</h1><p>Work order detail coming soon.</p></div>',
+  imports: [
+    CommonModule,
+    MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+  ],
+  templateUrl: './work-order-detail.component.html',
+  styleUrl: './work-order-detail.component.scss',
 })
-export class WorkOrderDetailComponent {}
+export class WorkOrderDetailComponent implements OnInit {
+  loading = true;
+  workOrder: WorkOrder | null = null;
+
+  constructor(
+    private workOrderService: WorkOrderService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    this.workOrderService.getById(id).subscribe({
+      next: wo => {
+        this.workOrder = wo;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  goBack(): void {
+    this.router.navigate(['/work-orders']);
+  }
+
+  goToVehicle(): void {
+    if (this.workOrder) {
+      this.router.navigate(['/vehicles', this.workOrder.vehicleId]);
+    }
+  }
+}

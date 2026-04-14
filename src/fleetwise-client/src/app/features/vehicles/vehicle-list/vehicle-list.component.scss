@@ -1,0 +1,62 @@
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  mat-form-field {
+    width: 180px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
+
+.empty-message {
+  color: rgba(0, 0, 0, 0.6);
+  padding: 16px 0;
+}
+
+table {
+  width: 100%;
+}
+
+.clickable-row {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &.status-inshop {
+    background: #fff8e1;
+    color: #f57f17;
+  }
+
+  &.status-outofservice {
+    background: #fbe9e7;
+    color: #d84315;
+  }
+
+  &.status-disposed {
+    background: #efebe9;
+    color: #6d4c41;
+  }
+}

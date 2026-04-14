@@ -1,0 +1,69 @@
+<div class="content-container">
+  <h1>Work Orders</h1>
+
+  <div class="filter-bar">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
+        <mat-option value="">All</mat-option>
+        @for (status of statusOptions; track status) {
+          <mat-option [value]="status">{{ status }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (statusFilter) {
+      <button mat-button (click)="clearFilters()">
+        <mat-icon>clear</mat-icon>
+        Clear Filter
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (workOrders.length === 0) {
+    <p class="empty-message">No work orders found.</p>
+  } @else {
+    <table mat-table [dataSource]="workOrders">
+      <ng-container matColumnDef="workOrderNumber">
+        <th mat-header-cell *matHeaderCellDef>WO #</th>
+        <td mat-cell *matCellDef="let row">{{ row.workOrderNumber }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="vehicle">
+        <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+        <td mat-cell *matCellDef="let row">{{ getVehicleDescription(row) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-badge" [class]="'status-' + row.status.toLowerCase()">{{ row.status }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="priority">
+        <th mat-header-cell *matHeaderCellDef>Priority</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="priority-badge" [class]="'priority-' + row.priority.toLowerCase()">{{ row.priority }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let row">{{ row.description }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="requestedDate">
+        <th mat-header-cell *matHeaderCellDef>Requested</th>
+        <td mat-cell *matCellDef="let row">{{ row.requestedDate | date:'mediumDate' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row" (click)="onRowClick(row)"></tr>
+    </table>
+  }
+</div>

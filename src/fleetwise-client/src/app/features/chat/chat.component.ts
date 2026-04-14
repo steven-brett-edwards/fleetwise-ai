@@ -1,8 +1,84 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ChatService } from '../../core/services/chat.service';
+import { ChatMessage } from '../../core/models/chat-message.model';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  template: '<div class="content-container"><h1>AI Chat</h1><p>Chat interface coming soon.</p></div>',
+  imports: [
+    CommonModule, FormsModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatProgressBarModule,
+  ],
+  templateUrl: './chat.component.html',
+  styleUrl: './chat.component.scss',
 })
-export class ChatComponent {}
+export class ChatComponent {
+  @ViewChild('messageList') messageList!: ElementRef<HTMLDivElement>;
+
+  messages: ChatMessage[] = [];
+  userInput = '';
+  streaming = false;
+  conversationId = crypto.randomUUID();
+
+  constructor(private chatService: ChatService) {}
+
+  send(): void {
+    const message = this.userInput.trim();
+    if (!message || this.streaming) return;
+
+    this.messages.push({
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+    });
+
+    this.userInput = '';
+    this.streaming = true;
+
+    const assistantMessage: ChatMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    };
+    this.messages.push(assistantMessage);
+    this.scrollToBottom();
+
+    this.chatService
+      .streamMessage({ message, conversationId: this.conversationId })
+      .subscribe({
+        next: chunk => {
+          assistantMessage.content += chunk;
+          this.scrollToBottom();
+        },
+        error: () => {
+          assistantMessage.content += '\n\n*An error occurred. Please try again.*';
+          this.streaming = false;
+        },
+        complete: () => {
+          this.streaming = false;
+        },
+      });
+  }
+
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.send();
+    }
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      const el = this.messageList?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
+  }
+}
