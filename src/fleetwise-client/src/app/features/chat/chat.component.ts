@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,15 +20,19 @@ import { ChatMessage } from '../../core/models/chat-message.model';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss',
 })
-export class ChatComponent {
+export class ChatComponent implements AfterViewInit {
   @ViewChild('messageList') messageList!: ElementRef<HTMLDivElement>;
 
-  messages: ChatMessage[] = [];
+  get messages(): ChatMessage[] { return this.chatService.messages; }
+
   userInput = '';
   streaming = false;
-  conversationId = crypto.randomUUID();
 
   constructor(private chatService: ChatService) {}
+
+  ngAfterViewInit(): void {
+    this.scrollToBottom();
+  }
 
   send(): void {
     const message = this.userInput.trim();
@@ -52,7 +56,7 @@ export class ChatComponent {
     this.scrollToBottom();
 
     this.chatService
-      .streamMessage({ message, conversationId: this.conversationId })
+      .streamMessage({ message, conversationId: this.chatService.conversationId })
       .subscribe({
         next: chunk => {
           assistantMessage.content += chunk;

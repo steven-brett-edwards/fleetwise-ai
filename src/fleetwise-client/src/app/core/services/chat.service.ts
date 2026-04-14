@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { ChatRequest, ChatResponse } from '../models/chat-message.model';
+import { ChatMessage, ChatRequest, ChatResponse } from '../models/chat-message.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
+  messages: ChatMessage[] = [];
+  conversationId = crypto.randomUUID();
+
   constructor(private api: ApiService) {}
 
   sendMessage(request: ChatRequest): Observable<ChatResponse> {
