@@ -134,20 +134,34 @@ public class MaintenanceControllerTests
     }
 
     [Fact]
-    public async Task GetUpcoming_WithCustomParameters_PassesParametersToRepository()
+    public async Task GetUpcoming_WithCustomParameters_ReturnsOkWithSchedulesWithinThreshold()
     {
         // Setup
+        var vehicleDueForServiceSoon = CreateTestVehicle();
+        var oneScheduleWithinCustomThreshold = new List<MaintenanceSchedule>
+        {
+            new()
+            {
+                Id = 3, VehicleId = 1, Vehicle = vehicleDueForServiceSoon,
+                MaintenanceType = MaintenanceType.BrakeInspection,
+                NextDueDate = DateTime.UtcNow.AddDays(5),
+                NextDueMileage = 88000
+            }
+        };
+
         _mockMaintenanceRepository
             .Setup(r => r.GetUpcomingSchedulesAsync(7, 1000))
-            .ReturnsAsync(new List<MaintenanceSchedule>());
+            .ReturnsAsync(oneScheduleWithinCustomThreshold);
 
         var maintenanceControllerWithMockedRepository = CreateMaintenanceControllerWithMockedRepository();
 
         // Act
-        await maintenanceControllerWithMockedRepository.GetUpcoming(days: 7, miles: 1000);
+        var actionResult = await maintenanceControllerWithMockedRepository.GetUpcoming(days: 7, miles: 1000);
 
         // Result
-        _mockMaintenanceRepository.Verify(
-            r => r.GetUpcomingSchedulesAsync(7, 1000), Times.Once);
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
+        var projectedJson = JsonSerializer.Serialize(okResult.Value);
+        projectedJson.Should().Contain("V-2019-0001");
+        projectedJson.Should().Contain("BrakeInspection");
     }
 }

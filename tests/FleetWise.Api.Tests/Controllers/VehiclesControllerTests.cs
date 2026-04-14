@@ -74,21 +74,23 @@ public class VehiclesControllerTests
     }
 
     [Fact]
-    public async Task GetAll_WhenStatusFilterProvided_PassesFilterToRepository()
+    public async Task GetAll_WhenAllFiltersProvided_ForwardsEveryFilterToRepository()
     {
         // Setup
         _mockVehicleRepository
-            .Setup(r => r.GetAllAsync(VehicleStatus.Active, null, null))
-            .ReturnsAsync(new List<Vehicle>());
+            .Setup(r => r.GetAllAsync(VehicleStatus.Active, "Public Works", FuelType.Diesel))
+            .ReturnsAsync(new List<Vehicle> { CreateTestVehicle(1, "V-2019-0001") });
 
         var vehiclesControllerWithMockedRepositories = CreateVehiclesControllerWithMockedRepositories();
 
         // Act
-        await vehiclesControllerWithMockedRepositories.GetAll(status: VehicleStatus.Active);
+        var actionResult = await vehiclesControllerWithMockedRepositories.GetAll(
+            status: VehicleStatus.Active, department: "Public Works", fuelType: FuelType.Diesel);
 
         // Result
+        Assert.IsType<OkObjectResult>(actionResult);
         _mockVehicleRepository.Verify(
-            r => r.GetAllAsync(VehicleStatus.Active, null, null), Times.Once);
+            r => r.GetAllAsync(VehicleStatus.Active, "Public Works", FuelType.Diesel), Times.Once);
     }
 
     // ── GetById ─────────────────────────────────────────────────────

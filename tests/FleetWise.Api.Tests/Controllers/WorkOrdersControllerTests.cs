@@ -71,21 +71,24 @@ public class WorkOrdersControllerTests
     }
 
     [Fact]
-    public async Task GetAll_WhenStatusFilterProvided_PassesFilterToRepository()
+    public async Task GetAll_WhenStatusFilterProvided_ReturnsOkWithOnlyMatchingWorkOrders()
     {
         // Setup
+        var oneOpenWorkOrder = new List<WorkOrder> { CreateTestWorkOrder(1, WorkOrderStatus.Open) };
         _mockWorkOrderRepository
             .Setup(r => r.GetAllAsync(WorkOrderStatus.Open))
-            .ReturnsAsync(new List<WorkOrder>());
+            .ReturnsAsync(oneOpenWorkOrder);
 
         var workOrdersControllerWithMockedRepository = CreateWorkOrdersControllerWithMockedRepository();
 
         // Act
-        await workOrdersControllerWithMockedRepository.GetAll(status: WorkOrderStatus.Open);
+        var actionResult = await workOrdersControllerWithMockedRepository.GetAll(status: WorkOrderStatus.Open);
 
         // Result
-        _mockWorkOrderRepository.Verify(
-            r => r.GetAllAsync(WorkOrderStatus.Open), Times.Once);
+        var okResult = Assert.IsType<OkObjectResult>(actionResult);
+        var returnedWorkOrders = Assert.IsType<List<WorkOrder>>(okResult.Value);
+        returnedWorkOrders.Should().HaveCount(1);
+        returnedWorkOrders[0].WorkOrderNumber.Should().Be("WO-2026-00001");
     }
 
     // ── GetById ─────────────────────────────────────────────────────
