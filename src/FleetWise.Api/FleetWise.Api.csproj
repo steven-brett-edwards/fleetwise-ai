@@ -21,4 +21,8 @@
     <NoWarn>MEVD9001;SKEXP0001;SKEXP0010;SKEXP0070</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="FleetWise.Api.Tests" />
+  </ItemGroup>
+
 </Project>

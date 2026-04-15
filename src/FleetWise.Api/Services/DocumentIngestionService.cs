@@ -91,7 +91,7 @@ public class DocumentIngestionService(
     /// Splits a long section into paragraph-sized chunks, keeping each
     /// under <see cref="MaxChunkLength"/> characters.
     /// </summary>
-    private static List<string> ChunkByParagraphs(string section)
+    internal static List<string> ChunkByParagraphs(string section)
     {
         var chunks = new List<string>();
         var paragraphs = section.Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
