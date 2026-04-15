@@ -66,28 +66,30 @@
           @if (overdueSchedules.length === 0) {
             <p class="empty-message">No overdue maintenance items.</p>
           } @else {
-            <table mat-table [dataSource]="overdueSchedules">
-              <ng-container matColumnDef="vehicleAssetNumber">
-                <th mat-header-cell *matHeaderCellDef>Asset #</th>
-                <td mat-cell *matCellDef="let row">
-                  <a [routerLink]="['/vehicles', row.vehicleId]">{{ row.vehicleAssetNumber }}</a>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="vehicleDescription">
-                <th mat-header-cell *matHeaderCellDef>Vehicle</th>
-                <td mat-cell *matCellDef="let row">{{ row.vehicleDescription }}</td>
-              </ng-container>
-              <ng-container matColumnDef="maintenanceType">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
-                <td mat-cell *matCellDef="let row">{{ row.maintenanceType }}</td>
-              </ng-container>
-              <ng-container matColumnDef="nextDueDate">
-                <th mat-header-cell *matHeaderCellDef>Due Date</th>
-                <td mat-cell *matCellDef="let row">{{ row.nextDueDate | date:'mediumDate' }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="overdueColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: overdueColumns;"></tr>
-            </table>
+            <div class="table-scroll">
+              <table mat-table [dataSource]="overdueSchedules">
+                <ng-container matColumnDef="vehicleAssetNumber">
+                  <th mat-header-cell *matHeaderCellDef>Asset #</th>
+                  <td mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/vehicles', row.vehicleId]">{{ row.vehicleAssetNumber }}</a>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="vehicleDescription">
+                  <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+                  <td mat-cell *matCellDef="let row">{{ row.vehicleDescription }}</td>
+                </ng-container>
+                <ng-container matColumnDef="maintenanceType">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let row">{{ row.maintenanceType }}</td>
+                </ng-container>
+                <ng-container matColumnDef="nextDueDate">
+                  <th mat-header-cell *matHeaderCellDef>Due Date</th>
+                  <td mat-cell *matCellDef="let row">{{ row.nextDueDate | date:'mediumDate' }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="overdueColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: overdueColumns;"></tr>
+              </table>
+            </div>
           }
         </mat-card-content>
       </mat-card>
@@ -103,32 +105,34 @@
           @if (upcomingSchedules.length === 0) {
             <p class="empty-message">No upcoming maintenance items.</p>
           } @else {
-            <table mat-table [dataSource]="upcomingSchedules">
-              <ng-container matColumnDef="vehicleAssetNumber">
-                <th mat-header-cell *matHeaderCellDef>Asset #</th>
-                <td mat-cell *matCellDef="let row">
-                  <a [routerLink]="['/vehicles', row.vehicleId]">{{ row.vehicleAssetNumber }}</a>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="vehicleDescription">
-                <th mat-header-cell *matHeaderCellDef>Vehicle</th>
-                <td mat-cell *matCellDef="let row">{{ row.vehicleDescription }}</td>
-              </ng-container>
-              <ng-container matColumnDef="maintenanceType">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
-                <td mat-cell *matCellDef="let row">{{ row.maintenanceType }}</td>
-              </ng-container>
-              <ng-container matColumnDef="nextDueDate">
-                <th mat-header-cell *matHeaderCellDef>Due Date</th>
-                <td mat-cell *matCellDef="let row">{{ row.nextDueDate | date:'mediumDate' }}</td>
-              </ng-container>
-              <ng-container matColumnDef="nextDueMileage">
-                <th mat-header-cell *matHeaderCellDef>Due Mileage</th>
-                <td mat-cell *matCellDef="let row">{{ row.nextDueMileage | number }}</td>
-              </ng-container>
-              <tr mat-header-row *matHeaderRowDef="upcomingColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: upcomingColumns;"></tr>
-            </table>
+            <div class="table-scroll">
+              <table mat-table [dataSource]="upcomingSchedules">
+                <ng-container matColumnDef="vehicleAssetNumber">
+                  <th mat-header-cell *matHeaderCellDef>Asset #</th>
+                  <td mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/vehicles', row.vehicleId]">{{ row.vehicleAssetNumber }}</a>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="vehicleDescription">
+                  <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+                  <td mat-cell *matCellDef="let row">{{ row.vehicleDescription }}</td>
+                </ng-container>
+                <ng-container matColumnDef="maintenanceType">
+                  <th mat-header-cell *matHeaderCellDef>Type</th>
+                  <td mat-cell *matCellDef="let row">{{ row.maintenanceType }}</td>
+                </ng-container>
+                <ng-container matColumnDef="nextDueDate">
+                  <th mat-header-cell *matHeaderCellDef>Due Date</th>
+                  <td mat-cell *matCellDef="let row">{{ row.nextDueDate | date:'mediumDate' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="nextDueMileage">
+                  <th mat-header-cell *matHeaderCellDef>Due Mileage</th>
+                  <td mat-cell *matCellDef="let row">{{ row.nextDueMileage | number }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="upcomingColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: upcomingColumns;"></tr>
+              </table>
+            </div>
           }
         </mat-card-content>
       </mat-card>

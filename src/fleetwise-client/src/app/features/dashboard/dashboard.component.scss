@@ -73,3 +73,28 @@ a {
   color: #1565c0;
   font-weight: 500;
 }
+
+.tables-row mat-card {
+  overflow: hidden;
+  min-width: 0;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+@media (max-width: 959px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tables-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 599px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
+}

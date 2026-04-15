@@ -109,3 +109,9 @@
     color: #2e7d32;
   }
 }
+
+@media (max-width: 599px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}

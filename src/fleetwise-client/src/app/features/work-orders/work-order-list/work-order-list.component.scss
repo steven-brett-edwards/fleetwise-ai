@@ -32,6 +32,10 @@ table {
   }
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .status-badge {
   display: inline-block;
   padding: 2px 8px;

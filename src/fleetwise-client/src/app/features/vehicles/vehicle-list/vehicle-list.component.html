@@ -47,6 +47,7 @@
   } @else if (vehicles.length === 0) {
     <p class="empty-message">No vehicles found.</p>
   } @else {
+    <div class="table-scroll">
     <table mat-table [dataSource]="vehicles">
       <ng-container matColumnDef="assetNumber">
         <th mat-header-cell *matHeaderCellDef>Asset #</th>
@@ -88,5 +89,6 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row" (click)="onRowClick(row)"></tr>
     </table>
+    </div>
   }
 </div>

@@ -72,6 +72,7 @@
         @if (maintenanceRecords.length === 0) {
           <p class="empty-message">No maintenance records.</p>
         } @else {
+          <div class="table-scroll">
           <table mat-table [dataSource]="maintenanceRecords">
             <ng-container matColumnDef="maintenanceType">
               <th mat-header-cell *matHeaderCellDef>Type</th>
@@ -96,6 +97,7 @@
             <tr mat-header-row *matHeaderRowDef="maintenanceColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: maintenanceColumns;"></tr>
           </table>
+          </div>
         }
       </mat-tab>
 
@@ -103,6 +105,7 @@
         @if (workOrders.length === 0) {
           <p class="empty-message">No work orders.</p>
         } @else {
+          <div class="table-scroll">
           <table mat-table [dataSource]="workOrders">
             <ng-container matColumnDef="workOrderNumber">
               <th mat-header-cell *matHeaderCellDef>WO #</th>
@@ -127,6 +130,7 @@
             <tr mat-header-row *matHeaderRowDef="workOrderColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: workOrderColumns;" class="clickable-row" (click)="onWorkOrderClick(row)"></tr>
           </table>
+          </div>
         }
       </mat-tab>
     </mat-tab-group>

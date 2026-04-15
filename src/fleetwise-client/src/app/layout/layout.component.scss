@@ -66,3 +66,9 @@ mat-toolbar {
   font-size: 14px;
   opacity: 0.8;
 }
+
+@media (max-width: 599px) {
+  .toolbar-subtitle {
+    display: none;
+  }
+}
