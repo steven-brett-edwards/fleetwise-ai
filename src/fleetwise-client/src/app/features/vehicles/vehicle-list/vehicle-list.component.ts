@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatSortModule } from '@angular/material/sort';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -24,6 +24,10 @@ import { Vehicle } from '../../../core/models/vehicle.model';
   styleUrl: './vehicle-list.component.scss',
 })
 export class VehicleListComponent implements OnInit {
+  private vehicleService = inject(VehicleService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   loading = true;
   vehicles: Vehicle[] = [];
   displayedColumns = ['assetNumber', 'description', 'status', 'department', 'fuelType', 'currentMileage', 'location'];
@@ -35,12 +39,6 @@ export class VehicleListComponent implements OnInit {
   statusOptions = ['Active', 'InShop', 'OutOfService', 'Disposed'];
   departmentOptions: string[] = [];
   fuelTypeOptions: string[] = [];
-
-  constructor(
-    private vehicleService: VehicleService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {

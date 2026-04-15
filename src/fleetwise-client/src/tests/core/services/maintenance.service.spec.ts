@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { MaintenanceService } from '../../../app/core/services/maintenance.service';
 import { ApiService } from '../../../app/core/services/api.service';
 import { createMockMaintenanceSchedule } from '../../helpers/mock-data.factory';
+import { MaintenanceSchedule } from '../../../app/core/models/maintenance.model';
 
 describe('MaintenanceService', () => {
   let service: MaintenanceService;
@@ -36,7 +37,7 @@ describe('MaintenanceService', () => {
     // Setup
     const expectedOverdueSchedule = createMockMaintenanceSchedule({ maintenanceType: 'BrakeInspection' });
     mockApiService.get.and.returnValue(of([expectedOverdueSchedule]));
-    let actualSchedules: any[] = [];
+    let actualSchedules: MaintenanceSchedule[] = [];
 
     // Act
     service.getOverdue().subscribe(s => actualSchedules = s);
@@ -80,7 +81,7 @@ describe('MaintenanceService', () => {
     // Setup
     const expectedUpcomingSchedule = createMockMaintenanceSchedule({ maintenanceType: 'TireRotation' });
     mockApiService.get.and.returnValue(of([expectedUpcomingSchedule]));
-    let actualSchedules: any[] = [];
+    let actualSchedules: MaintenanceSchedule[] = [];
 
     // Act
     service.getUpcoming().subscribe(s => actualSchedules = s);

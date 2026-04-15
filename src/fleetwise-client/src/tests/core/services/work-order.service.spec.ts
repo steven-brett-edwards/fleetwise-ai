@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { WorkOrderService } from '../../../app/core/services/work-order.service';
 import { ApiService } from '../../../app/core/services/api.service';
 import { createMockWorkOrder } from '../../helpers/mock-data.factory';
+import { WorkOrder } from '../../../app/core/models/work-order.model';
 
 describe('WorkOrderService', () => {
   let service: WorkOrderService;
@@ -48,7 +49,7 @@ describe('WorkOrderService', () => {
     const expectedOpenWorkOrder = createMockWorkOrder({ status: 'Open', workOrderNumber: 'WO-001' });
     const expectedCompletedWorkOrder = createMockWorkOrder({ id: 2, status: 'Completed', workOrderNumber: 'WO-002' });
     mockApiService.get.and.returnValue(of([expectedOpenWorkOrder, expectedCompletedWorkOrder]));
-    let actualWorkOrders: any[] = [];
+    let actualWorkOrders: WorkOrder[] = [];
 
     // Act
     service.getAll().subscribe(wo => actualWorkOrders = wo);
@@ -78,7 +79,7 @@ describe('WorkOrderService', () => {
     // Setup
     const expectedWorkOrder = createMockWorkOrder({ id: 42, workOrderNumber: 'WO-042' });
     mockApiService.get.and.returnValue(of(expectedWorkOrder));
-    let actualWorkOrder: any;
+    let actualWorkOrder!: WorkOrder;
 
     // Act
     service.getById(42).subscribe(wo => actualWorkOrder = wo);

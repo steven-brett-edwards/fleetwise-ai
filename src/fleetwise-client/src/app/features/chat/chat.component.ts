@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,14 +21,14 @@ import { ChatMessage } from '../../core/models/chat-message.model';
   styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements AfterViewInit {
+  private chatService = inject(ChatService);
+
   @ViewChild('messageList') messageList!: ElementRef<HTMLDivElement>;
 
   get messages(): ChatMessage[] { return this.chatService.messages; }
 
   userInput = '';
   streaming = false;
-
-  constructor(private chatService: ChatService) {}
 
   ngAfterViewInit(): void {
     this.scrollToBottom();

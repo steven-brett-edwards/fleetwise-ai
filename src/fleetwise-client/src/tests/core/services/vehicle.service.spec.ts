@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { VehicleService } from '../../../app/core/services/vehicle.service';
 import { ApiService } from '../../../app/core/services/api.service';
-import { createMockVehicle, createMockFleetSummary, createMockMaintenanceRecord, createMockWorkOrder } from '../../helpers/mock-data.factory';
+import { createMockVehicle, createMockFleetSummary, createMockMaintenanceRecord } from '../../helpers/mock-data.factory';
+import { Vehicle } from '../../../app/core/models/vehicle.model';
+import { MaintenanceRecord } from '../../../app/core/models/maintenance.model';
 
 describe('VehicleService', () => {
   let service: VehicleService;
@@ -63,7 +65,7 @@ describe('VehicleService', () => {
   it('getAll_WithUndefinedFilterValues_OmitsUndefinedParams', () => {
     // Setup
     mockApiService.get.and.returnValue(of([]));
-    const filterWithUndefined = { status: undefined, department: 'Operations', fuelType: undefined } as any;
+    const filterWithUndefined = { status: undefined, department: 'Operations', fuelType: undefined } as { status?: string; department?: string; fuelType?: string };
 
     // Act
     service.getAll(filterWithUndefined).subscribe();
@@ -77,7 +79,7 @@ describe('VehicleService', () => {
     const expectedActiveVehicle = createMockVehicle({ id: 1, assetNumber: 'V-001', status: 'Active' });
     const expectedInShopVehicle = createMockVehicle({ id: 2, assetNumber: 'V-002', status: 'InShop' });
     mockApiService.get.and.returnValue(of([expectedActiveVehicle, expectedInShopVehicle]));
-    let actualVehicles: any[] = [];
+    let actualVehicles: Vehicle[] = [];
 
     // Act
     service.getAll().subscribe(v => actualVehicles = v);
@@ -107,7 +109,7 @@ describe('VehicleService', () => {
     // Setup
     const expectedVehicle = createMockVehicle({ id: 7, assetNumber: 'V-007' });
     mockApiService.get.and.returnValue(of(expectedVehicle));
-    let actualVehicle: any;
+    let actualVehicle!: Vehicle;
 
     // Act
     service.getById(7).subscribe(v => actualVehicle = v);
@@ -132,7 +134,7 @@ describe('VehicleService', () => {
     // Setup
     const expectedOilChangeRecord = createMockMaintenanceRecord({ maintenanceType: 'OilChange' });
     mockApiService.get.and.returnValue(of([expectedOilChangeRecord]));
-    let actualRecords: any[] = [];
+    let actualRecords: MaintenanceRecord[] = [];
 
     // Act
     service.getMaintenanceHistory(7).subscribe(r => actualRecords = r);

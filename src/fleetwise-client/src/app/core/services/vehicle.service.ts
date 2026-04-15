@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { Vehicle, FleetSummary } from '../models/vehicle.model';
@@ -7,7 +7,8 @@ import { WorkOrder } from '../models/work-order.model';
 
 @Injectable({ providedIn: 'root' })
 export class VehicleService {
-  constructor(private api: ApiService) {}
+  private api = inject(ApiService);
+
 
   getAll(filters?: { status?: string; department?: string; fuelType?: string }): Observable<Vehicle[]> {
     const params: Record<string, string> = {};

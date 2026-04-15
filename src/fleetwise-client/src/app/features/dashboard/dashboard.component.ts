@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -23,6 +23,10 @@ import { MaintenanceSchedule } from '../../core/models/maintenance.model';
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
+  private vehicleService = inject(VehicleService);
+  private maintenanceService = inject(MaintenanceService);
+  private workOrderService = inject(WorkOrderService);
+
   loading = true;
   summary: FleetSummary | null = null;
   overdueSchedules: MaintenanceSchedule[] = [];
@@ -31,12 +35,6 @@ export class DashboardComponent implements OnInit {
 
   overdueColumns = ['vehicleAssetNumber', 'vehicleDescription', 'maintenanceType', 'nextDueDate'];
   upcomingColumns = ['vehicleAssetNumber', 'vehicleDescription', 'maintenanceType', 'nextDueDate', 'nextDueMileage'];
-
-  constructor(
-    private vehicleService: VehicleService,
-    private maintenanceService: MaintenanceService,
-    private workOrderService: WorkOrderService,
-  ) {}
 
   ngOnInit(): void {
     forkJoin({

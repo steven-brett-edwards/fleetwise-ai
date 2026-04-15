@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,18 +23,16 @@ import { WorkOrder } from '../../../core/models/work-order.model';
   styleUrl: './work-order-list.component.scss',
 })
 export class WorkOrderListComponent implements OnInit {
+  private workOrderService = inject(WorkOrderService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   loading = true;
   workOrders: WorkOrder[] = [];
   displayedColumns = ['workOrderNumber', 'vehicle', 'status', 'priority', 'description', 'requestedDate'];
 
   statusFilter = '';
   statusOptions = ['Open', 'InProgress', 'Completed', 'Cancelled'];
-
-  constructor(
-    private workOrderService: WorkOrderService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {

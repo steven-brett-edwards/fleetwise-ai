@@ -28,7 +28,7 @@
           <div class="info-item">
             <span class="info-label">Vehicle</span>
             @if (workOrder.vehicle) {
-              <a class="vehicle-link" (click)="goToVehicle()">
+              <a class="vehicle-link" (click)="goToVehicle()" (keydown.enter)="goToVehicle()" tabindex="0" role="link">
                 {{ workOrder.vehicle.assetNumber }} — {{ workOrder.vehicle.year }} {{ workOrder.vehicle.make }} {{ workOrder.vehicle.model }}
               </a>
             } @else {
@@ -53,7 +53,7 @@
           </div>
           <div class="info-item">
             <span class="info-label">Total Cost</span>
-            <span class="info-value">{{ workOrder.totalCost != null ? (workOrder.totalCost | currency) : '—' }}</span>
+            <span class="info-value">{{ workOrder.totalCost !== null ? (workOrder.totalCost | currency) : '—' }}</span>
           </div>
         </div>
 

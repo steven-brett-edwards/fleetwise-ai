@@ -1,11 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { MaintenanceSchedule } from '../models/maintenance.model';
 
 @Injectable({ providedIn: 'root' })
 export class MaintenanceService {
-  constructor(private api: ApiService) {}
+  private api = inject(ApiService);
+
 
   getOverdue(): Observable<MaintenanceSchedule[]> {
     return this.api.get<MaintenanceSchedule[]>('/maintenance/overdue');

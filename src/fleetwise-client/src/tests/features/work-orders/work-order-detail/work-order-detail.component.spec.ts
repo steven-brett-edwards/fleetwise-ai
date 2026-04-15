@@ -4,7 +4,7 @@ import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { WorkOrderDetailComponent } from '../../../../app/features/work-orders/work-order-detail/work-order-detail.component';
 import { WorkOrderService } from '../../../../app/core/services/work-order.service';
-import { createMockWorkOrder, createMockVehicle } from '../../../helpers/mock-data.factory';
+import { createMockWorkOrder } from '../../../helpers/mock-data.factory';
 
 describe('WorkOrderDetailComponent', () => {
   let component: WorkOrderDetailComponent;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -19,14 +19,12 @@ import { WorkOrder } from '../../../core/models/work-order.model';
   styleUrl: './work-order-detail.component.scss',
 })
 export class WorkOrderDetailComponent implements OnInit {
+  private workOrderService = inject(WorkOrderService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   loading = true;
   workOrder: WorkOrder | null = null;
-
-  constructor(
-    private workOrderService: WorkOrderService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -25,6 +25,10 @@ import { WorkOrder } from '../../../core/models/work-order.model';
   styleUrl: './vehicle-detail.component.scss',
 })
 export class VehicleDetailComponent implements OnInit {
+  private vehicleService = inject(VehicleService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   loading = true;
   vehicle: Vehicle | null = null;
   maintenanceRecords: MaintenanceRecord[] = [];
@@ -32,12 +36,6 @@ export class VehicleDetailComponent implements OnInit {
 
   maintenanceColumns = ['maintenanceType', 'performedDate', 'mileageAtService', 'cost', 'technicianName'];
   workOrderColumns = ['workOrderNumber', 'status', 'priority', 'description', 'requestedDate'];
-
-  constructor(
-    private vehicleService: VehicleService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));

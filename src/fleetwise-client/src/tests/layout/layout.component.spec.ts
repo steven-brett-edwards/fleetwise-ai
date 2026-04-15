@@ -80,7 +80,7 @@ describe('LayoutComponent', () => {
 
   it('ngOnInit_WhenSidenavNotYetAvailable_DoesNotThrow', () => {
     // Setup
-    component.sidenav = undefined as any;
+    component.sidenav = undefined as unknown as MatSidenav;
     breakpointSubject.next({ matches: true, breakpoints: {} });
 
     // Act & Result

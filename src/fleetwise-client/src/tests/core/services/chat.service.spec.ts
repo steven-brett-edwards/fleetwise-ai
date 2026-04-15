@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { ChatService } from '../../../app/core/services/chat.service';
 import { ApiService } from '../../../app/core/services/api.service';
 import { createMockSSEResponse } from '../../helpers/mock-data.factory';
+import { ChatResponse } from '../../../app/core/models/chat-message.model';
 import { environment } from '../../../environments/environment';
 
 describe('ChatService', () => {
@@ -55,7 +56,7 @@ describe('ChatService', () => {
     // Setup
     const expectedResponseText = 'There are 35 vehicles';
     mockApiService.post.and.returnValue(of({ response: expectedResponseText, conversationId: 'id', functionsUsed: [] }));
-    let actualResponse: any;
+    let actualResponse!: ChatResponse;
 
     // Act
     service.sendMessage({ message: 'count' }).subscribe(r => actualResponse = r);
@@ -182,7 +183,7 @@ describe('ChatService', () => {
     let capturedSignal: AbortSignal | undefined;
     globalThis.fetch = jasmine.createSpy('fetch').and.callFake((_url: string, init: RequestInit) => {
       capturedSignal = init.signal as AbortSignal;
-      return new Promise(() => {}); // Never resolves
+      return new Promise(() => { /* noop */ }); // Never resolves
     });
 
     // Act
