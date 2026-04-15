@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using FleetWise.Api.Models;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -9,13 +10,18 @@ namespace FleetWise.Api.Services;
 /// generates vector embeddings, and stores them in the vector store.
 /// Runs once at application startup — similar to SeedData.Initialize for SQL.
 /// </summary>
+/// <remarks>
+/// Excluded from coverage because this is pure I/O orchestration (file reads,
+/// embedding API calls, vector store writes). The testable chunking logic lives
+/// in <see cref="DocumentChunker"/>.
+/// </remarks>
+[ExcludeFromCodeCoverage(Justification = "I/O orchestration — chunking logic tested via DocumentChunker")]
 public class DocumentIngestionService(
     IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator,
     InMemoryVectorStore vectorStore,
     ILogger<DocumentIngestionService> logger)
 {
     private const string CollectionName = "fleet-documents";
-    private const int MaxChunkLength = 500;
 
     public async Task IngestDocumentsAsync(string documentsPath)
     {
@@ -31,7 +37,7 @@ public class DocumentIngestionService(
         {
             var fileName = Path.GetFileName(file);
             var content = await File.ReadAllTextAsync(file);
-            var chunks = ChunkByHeadings(content);
+            var chunks = DocumentChunker.ChunkByHeadings(content);
 
             // Generate embeddings for all chunks in a single batch call
             var embeddings = await embeddingGenerator.GenerateAsync(chunks);
@@ -55,71 +61,5 @@ public class DocumentIngestionService(
 
         logger.LogInformation("Document ingestion complete: {TotalChunks} total chunks from {FileCount} files",
             totalChunks, files.Length);
-    }
-
-    /// <summary>
-    /// Splits a markdown document into chunks at ## heading boundaries.
-    /// If a section exceeds <see cref="MaxChunkLength"/> characters,
-    /// it is sub-split by paragraph (double newline) boundaries.
-    /// </summary>
-    internal static List<string> ChunkByHeadings(string content)
-    {
-        var chunks = new List<string>();
-        var sections = content.Split("\n## ", StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var section in sections)
-        {
-            // Re-add the heading prefix that was removed by split (except for the first section
-            // which starts with the # title, not ##)
-            var text = section == sections[0] ? section.Trim() : $"## {section.Trim()}";
-
-            if (text.Length <= MaxChunkLength)
-            {
-                chunks.Add(text);
-            }
-            else
-            {
-                // Sub-split long sections by paragraph
-                chunks.AddRange(ChunkByParagraphs(text));
-            }
-        }
-
-        return chunks;
-    }
-
-    /// <summary>
-    /// Splits a long section into paragraph-sized chunks, keeping each
-    /// under <see cref="MaxChunkLength"/> characters.
-    /// </summary>
-    internal static List<string> ChunkByParagraphs(string section)
-    {
-        var chunks = new List<string>();
-        var paragraphs = section.Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
-        var current = string.Empty;
-
-        foreach (var paragraph in paragraphs)
-        {
-            var trimmed = paragraph.Trim();
-            if (current.Length == 0)
-            {
-                current = trimmed;
-            }
-            else if (current.Length + trimmed.Length + 2 <= MaxChunkLength)
-            {
-                current = $"{current}\n\n{trimmed}";
-            }
-            else
-            {
-                chunks.Add(current);
-                current = trimmed;
-            }
-        }
-
-        if (current.Length > 0)
-        {
-            chunks.Add(current);
-        }
-
-        return chunks;
     }
 }

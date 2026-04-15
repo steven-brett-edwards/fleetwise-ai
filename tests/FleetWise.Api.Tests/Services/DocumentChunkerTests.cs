@@ -9,7 +9,7 @@ namespace FleetWise.Api.Tests.Services;
 /// These are unit tests (no I/O, no mocks, no embedding API) because chunking
 /// quality directly determines RAG retrieval quality.
 /// </summary>
-public class DocumentIngestionServiceTests
+public class DocumentChunkerTests
 {
     // ── ChunkByHeadings ─────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ public class DocumentIngestionServiceTests
             """;
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().HaveCount(3);
@@ -46,7 +46,7 @@ public class DocumentIngestionServiceTests
         var document = "Just a plain paragraph with no headings.";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().ContainSingle()
@@ -62,7 +62,7 @@ public class DocumentIngestionServiceTests
         var document = $"# Title\n\n## Long Section\n\n{longParagraph1}\n\n{longParagraph2}";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result -- title chunk + 2 sub-chunks from the long section
         chunks.Should().HaveCount(3);
@@ -79,7 +79,7 @@ public class DocumentIngestionServiceTests
         var document = $"## A\n\n{content}";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         var totalLength = chunks[0].Length;
@@ -94,7 +94,7 @@ public class DocumentIngestionServiceTests
         var document = "# Fleet Management Policies";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().ContainSingle()
@@ -108,7 +108,7 @@ public class DocumentIngestionServiceTests
         var document = "# Title\n\n## Empty Section\n\n## Another Section\n\nSome content.";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().HaveCount(3);
@@ -123,7 +123,7 @@ public class DocumentIngestionServiceTests
         var document = "  # Title  \n\n## Section  \n\n  Content  ";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().AllSatisfy(chunk =>
@@ -154,7 +154,7 @@ public class DocumentIngestionServiceTests
             """;
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByHeadings(document);
+        var chunks = DocumentChunker.ChunkByHeadings(document);
 
         // Result
         chunks.Should().HaveCount(4); // title + 3 sections
@@ -171,7 +171,7 @@ public class DocumentIngestionServiceTests
         var section = "Short paragraph one.\n\nShort paragraph two.\n\nShort paragraph three.";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(section);
+        var chunks = DocumentChunker.ChunkByParagraphs(section);
 
         // Result -- all fit under 500 chars, so combined into one
         chunks.Should().ContainSingle();
@@ -188,7 +188,7 @@ public class DocumentIngestionServiceTests
         var section = $"{para1}\n\n{para2}";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(section);
+        var chunks = DocumentChunker.ChunkByParagraphs(section);
 
         // Result
         chunks.Should().HaveCount(2);
@@ -206,7 +206,7 @@ public class DocumentIngestionServiceTests
         var section = $"{para1}\n\n{para2}\n\n{para3}";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(section);
+        var chunks = DocumentChunker.ChunkByParagraphs(section);
 
         // Result -- para1+para2 fit (402 chars with \n\n), para3 is separate
         chunks.Should().HaveCount(2);
@@ -222,7 +222,7 @@ public class DocumentIngestionServiceTests
         var section = "Just one paragraph with no double-newlines.";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(section);
+        var chunks = DocumentChunker.ChunkByParagraphs(section);
 
         // Result
         chunks.Should().ContainSingle()
@@ -233,7 +233,7 @@ public class DocumentIngestionServiceTests
     public void ChunkByParagraphs_WhenEmptyString_ReturnsEmptyList()
     {
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(string.Empty);
+        var chunks = DocumentChunker.ChunkByParagraphs(string.Empty);
 
         // Result
         chunks.Should().BeEmpty();
@@ -246,7 +246,7 @@ public class DocumentIngestionServiceTests
         var section = "  First paragraph  \n\n  Second paragraph  ";
 
         // Act
-        var chunks = DocumentIngestionService.ChunkByParagraphs(section);
+        var chunks = DocumentChunker.ChunkByParagraphs(section);
 
         // Result
         chunks.Should().ContainSingle();
