@@ -8,7 +8,7 @@
     "test": "ng test",
     "coverage": "ng test --watch=false --code-coverage && open coverage/fleetwise-client/index.html",
     "lint": "ng lint",
-    "develop": "ng lint && ng build && ng serve"
+    "develop": "concurrently 'ng lint && ng build && ng serve' 'cd ../FleetWise.Api && dotnet watch run'"
   },
   "private": true,
   "dependencies": {
@@ -30,6 +30,7 @@
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
     "@angular/compiler-cli": "^18.2.0",
+    "concurrently": "^8.2.0",
     "@types/jasmine": "~5.1.0",
     "angular-eslint": "21.0.1",
     "eslint": "^9.39.1",
