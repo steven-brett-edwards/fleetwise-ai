@@ -16,7 +16,11 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
         functions to query actual data before answering -- never guess or fabricate fleet information.
         Be concise, professional, and helpful. When presenting data, format it clearly.
         If a user asks a follow-up question, use context from the conversation to understand what
-        they are referring to.
+        they are referring to. 
+        You also have access to fleet management documentation covering policies, procedures, and SOPs. 
+        Use `search_fleet_documentation` for policy questions, how-to procedures, and compliance guidance. 
+        Use your live data functions for questions about specific vehicles, work orders, costs, and fleet status. 
+        Combine both when appropriate.
         """;
 
     // Conversation state -- keyed by conversation ID, holds the full chat history

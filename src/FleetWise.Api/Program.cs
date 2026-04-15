@@ -1,9 +1,13 @@
+using System.ClientModel;
 using FleetWise.Api.Plugins;
 using FleetWise.Api.Services;
 using FleetWise.Infrastructure.Data;
 using FleetWise.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Connectors.InMemory;
+using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +22,49 @@ builder.Services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
 builder.Services.AddScoped<IMaintenanceRepository, MaintenanceRepository>();
 builder.Services.AddScoped<IPartRepository, PartRepository>();
 
+// Vector store -- singleton because it holds all document embeddings in memory for the app lifetime
+builder.Services.AddSingleton<InMemoryVectorStore>();
+
 // AI Provider -- reads "AiProvider" from config to decide which LLM backend to use.
 // All three providers use the OpenAI connector -- Ollama exposes an OpenAI-compatible API.
 var aiProvider = builder.Configuration["AiProvider"] ?? "Ollama";
 
-builder.Services.AddScoped<Kernel>(serviceProvider =>
+// Embedding generator -- registered on the app container (not just the Kernel) so that
+// both the Kernel factory and the startup ingestion service can resolve it.
+switch (aiProvider)
+{
+    case "Ollama":
+        var ollamaEndpoint = builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
+        var ollamaEmbeddingModel = builder.Configuration["Ollama:EmbeddingModel"] ?? "nomic-embed-text";
+        var ollamaClient = new OpenAIClient(
+            new ApiKeyCredential("ollama"),
+            new OpenAIClientOptions { Endpoint = new Uri($"{ollamaEndpoint}/v1/") });
+        builder.Services.AddOpenAIEmbeddingGenerator(
+            modelId: ollamaEmbeddingModel,
+            openAIClient: ollamaClient);
+        break;
+    case "AzureOpenAI":
+        var azureEmbedEndpoint = builder.Configuration["AzureOpenAI:Endpoint"]
+            ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required");
+        var azureEmbedModel = builder.Configuration["AzureOpenAI:EmbeddingModel"] ?? "text-embedding-3-small";
+        var azureEmbedKey = builder.Configuration["AzureOpenAI:ApiKey"]
+            ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required");
+        builder.Services.AddAzureOpenAIEmbeddingGenerator(
+            deploymentName: azureEmbedModel,
+            endpoint: azureEmbedEndpoint,
+            apiKey: azureEmbedKey);
+        break;
+    case "OpenAI":
+        var openAiEmbedModel = builder.Configuration["OpenAI:EmbeddingModel"] ?? "text-embedding-3-small";
+        var openAiEmbedKey = builder.Configuration["OpenAI:ApiKey"]
+            ?? throw new InvalidOperationException("OpenAI:ApiKey is required");
+        builder.Services.AddOpenAIEmbeddingGenerator(
+            modelId: openAiEmbedModel,
+            apiKey: openAiEmbedKey);
+        break;
+}
+
+builder.Services.AddScoped(serviceProvider =>
 {
     var kernelBuilder = Kernel.CreateBuilder();
 
@@ -76,6 +118,10 @@ builder.Services.AddScoped<Kernel>(serviceProvider =>
     var partRepo = serviceProvider.GetRequiredService<IPartRepository>();
     kernel.ImportPluginFromObject(new WorkOrderPlugin(workOrderRepo, partRepo), "WorkOrder");
 
+    var embeddingService = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+    var vectorStore = serviceProvider.GetRequiredService<InMemoryVectorStore>();
+    kernel.ImportPluginFromObject(new DocumentSearchPlugin(embeddingService, vectorStore), "DocumentSearch");
+
     return kernel;
 });
 
@@ -114,6 +160,22 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<FleetDbContext>();
     SeedData.Initialize(context);
+    var docsPath = Path.Combine(app.Environment.ContentRootPath, "..", "..", "data", "documents");
+
+    if (Directory.Exists(docsPath))
+    {
+        var embeddingService = scope.ServiceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        var vectorStore = scope.ServiceProvider.GetRequiredService<InMemoryVectorStore>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DocumentIngestionService>>();
+
+        var ingestionService = new DocumentIngestionService(embeddingService, vectorStore, logger);
+        await ingestionService.IngestDocumentsAsync(docsPath);
+    }
+    else
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("Documents path not found: {DocsPath}. Skipping document ingestion.", docsPath);
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -128,7 +190,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAngularDev");
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 // Make the Program class accessible for integration tests
 public partial class Program { }
