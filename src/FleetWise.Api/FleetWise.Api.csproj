@@ -16,6 +16,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Suppress experimental API warnings for SK vector store abstractions (MEVD9001) -->
+    <!-- and SK experimental features (SKEXP0001/0010/0070) used by RAG pipeline -->
+    <NoWarn>MEVD9001;SKEXP0001;SKEXP0010;SKEXP0070</NoWarn>
   </PropertyGroup>
 
 </Project>
