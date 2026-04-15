@@ -37,6 +37,10 @@ appsettings.*.local.json
 ## Test coverage
 TestResults/
 coveragereport/
+coverage/
+
+## Linting
+.hintrc
 
 ## OS
 .DS_Store
