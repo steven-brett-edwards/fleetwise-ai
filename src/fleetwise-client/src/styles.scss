@@ -1,4 +1,3 @@
-
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
@@ -11,22 +10,24 @@
 @include mat.app-background();
 
 // Define the theme object.
-$fleetwise-client-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$blue-palette,
-    tertiary: mat.$orange-palette,
-  ),
-  density: (
-    scale: 0,
-  )
-));
+$fleetwise-client-theme: mat.define-theme(
+    (
+        color: (
+            theme-type: light,
+            primary: mat.$blue-palette,
+            tertiary: mat.$orange-palette,
+        ),
+        density: (
+            scale: 0,
+        ),
+    )
+);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 :root {
-  @include mat.all-component-themes($fleetwise-client-theme);
+    @include mat.all-component-themes($fleetwise-client-theme);
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
@@ -37,27 +38,50 @@ $fleetwise-client-theme: mat.define-theme((
 // @include mat.color-variants-backwards-compatibility($fleetwise-client-theme);
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+    height: 100%;
+}
+body {
+    margin: 0;
+    font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
 
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
 .content-container {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
-  overflow: hidden;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    overflow: hidden;
 }
 
-.status-active { color: #2e7d32; }
-.status-inshop { color: #f57f17; }
-.status-outofservice { color: #c62828; }
-.status-retired { color: #757575; }
+.status-active {
+    color: #2e7d32;
+}
+.status-inshop {
+    color: #f57f17;
+}
+.status-outofservice {
+    color: #c62828;
+}
+.status-retired {
+    color: #757575;
+}
 
-.priority-critical { color: #c62828; font-weight: 600; }
-.priority-high { color: #e65100; }
-.priority-medium { color: #f57f17; }
-.priority-low { color: #2e7d32; }
+.priority-critical {
+    color: #c62828;
+    font-weight: 600;
+}
+.priority-high {
+    color: #e65100;
+}
+.priority-medium {
+    color: #f57f17;
+}
+.priority-low {
+    color: #2e7d32;
+}

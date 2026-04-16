@@ -14,88 +14,103 @@ import { Vehicle } from '../../../core/models/vehicle.model';
 
 @Component({
     selector: 'app-vehicle-list',
+    standalone: true,
     imports: [
-        CommonModule, FormsModule,
-        MatTableModule, MatSortModule, MatSelectModule, MatFormFieldModule,
-        MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+        CommonModule,
+        FormsModule,
+        MatTableModule,
+        MatSortModule,
+        MatSelectModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatButtonModule,
+        MatProgressSpinnerModule,
     ],
     templateUrl: './vehicle-list.component.html',
-    styleUrl: './vehicle-list.component.scss'
+    styleUrl: './vehicle-list.component.scss',
 })
 export class VehicleListComponent implements OnInit {
-  private vehicleService = inject(VehicleService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+    private vehicleService = inject(VehicleService);
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
 
-  loading = true;
-  vehicles: Vehicle[] = [];
-  displayedColumns = ['assetNumber', 'description', 'status', 'department', 'fuelType', 'currentMileage', 'location'];
+    loading = true;
+    vehicles: Vehicle[] = [];
+    displayedColumns = [
+        'assetNumber',
+        'description',
+        'status',
+        'department',
+        'fuelType',
+        'currentMileage',
+        'location',
+    ];
 
-  statusFilter = '';
-  departmentFilter = '';
-  fuelTypeFilter = '';
+    statusFilter = '';
+    departmentFilter = '';
+    fuelTypeFilter = '';
 
-  statusOptions = ['Active', 'InShop', 'OutOfService', 'Disposed'];
-  departmentOptions: string[] = [];
-  fuelTypeOptions: string[] = [];
+    statusOptions = ['Active', 'InShop', 'OutOfService', 'Disposed'];
+    departmentOptions: string[] = [];
+    fuelTypeOptions: string[] = [];
 
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.statusFilter = params['status'] || '';
-      this.departmentFilter = params['department'] || '';
-      this.fuelTypeFilter = params['fuelType'] || '';
-      this.loadVehicles();
-    });
-  }
-
-  loadVehicles(): void {
-    this.loading = true;
-    const filters: Record<string, string> = {};
-    if (this.statusFilter) filters['status'] = this.statusFilter;
-    if (this.departmentFilter) filters['department'] = this.departmentFilter;
-    if (this.fuelTypeFilter) filters['fuelType'] = this.fuelTypeFilter;
-
-    this.vehicleService.getAll(filters).subscribe({
-      next: vehicles => {
-        this.vehicles = vehicles;
-        this.extractFilterOptions(vehicles);
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  onFilterChange(): void {
-    const queryParams: Record<string, string | null> = {
-      status: this.statusFilter || null,
-      department: this.departmentFilter || null,
-      fuelType: this.fuelTypeFilter || null,
-    };
-    this.router.navigate([], { queryParams, queryParamsHandling: 'merge' });
-  }
-
-  clearFilters(): void {
-    this.statusFilter = '';
-    this.departmentFilter = '';
-    this.fuelTypeFilter = '';
-    this.router.navigate([], { queryParams: {} });
-  }
-
-  onRowClick(vehicle: Vehicle): void {
-    this.router.navigate(['/vehicles', vehicle.id]);
-  }
-
-  getDescription(v: Vehicle): string {
-    return `${v.year} ${v.make} ${v.model}`;
-  }
-
-  private extractFilterOptions(vehicles: Vehicle[]): void {
-    if (!this.statusFilter) {
-      this.statusOptions = [...new Set(vehicles.map(v => v.status))].sort();
+    ngOnInit(): void {
+        this.route.queryParams.subscribe((params) => {
+            this.statusFilter = params['status'] || '';
+            this.departmentFilter = params['department'] || '';
+            this.fuelTypeFilter = params['fuelType'] || '';
+            this.loadVehicles();
+        });
     }
-    this.departmentOptions = [...new Set(vehicles.map(v => v.department))].sort();
-    this.fuelTypeOptions = [...new Set(vehicles.map(v => v.fuelType))].sort();
-  }
+
+    loadVehicles(): void {
+        this.loading = true;
+        const filters: Record<string, string> = {};
+        if (this.statusFilter) filters['status'] = this.statusFilter;
+        if (this.departmentFilter) filters['department'] = this.departmentFilter;
+        if (this.fuelTypeFilter) filters['fuelType'] = this.fuelTypeFilter;
+
+        this.vehicleService.getAll(filters).subscribe({
+            next: (vehicles) => {
+                this.vehicles = vehicles;
+                this.extractFilterOptions(vehicles);
+                this.loading = false;
+            },
+            error: () => {
+                this.loading = false;
+            },
+        });
+    }
+
+    onFilterChange(): void {
+        const queryParams: Record<string, string | null> = {
+            status: this.statusFilter || null,
+            department: this.departmentFilter || null,
+            fuelType: this.fuelTypeFilter || null,
+        };
+        this.router.navigate([], { queryParams, queryParamsHandling: 'merge' });
+    }
+
+    clearFilters(): void {
+        this.statusFilter = '';
+        this.departmentFilter = '';
+        this.fuelTypeFilter = '';
+        this.router.navigate([], { queryParams: {} });
+    }
+
+    onRowClick(vehicle: Vehicle): void {
+        this.router.navigate(['/vehicles', vehicle.id]);
+    }
+
+    getDescription(v: Vehicle): string {
+        return `${v.year} ${v.make} ${v.model}`;
+    }
+
+    private extractFilterOptions(vehicles: Vehicle[]): void {
+        if (!this.statusFilter) {
+            this.statusOptions = [...new Set(vehicles.map((v) => v.status))].sort();
+        }
+        this.departmentOptions = [...new Set(vehicles.map((v) => v.department))].sort();
+        this.fuelTypeOptions = [...new Set(vehicles.map((v) => v.fuelType))].sort();
+    }
 }

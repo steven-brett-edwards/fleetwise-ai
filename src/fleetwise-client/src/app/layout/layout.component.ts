@@ -11,46 +11,53 @@ import { takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-layout',
+    standalone: true,
     imports: [
-        RouterOutlet, RouterLink, RouterLinkActive,
-        MatSidenavModule, MatToolbarModule, MatListModule, MatIconModule, MatButtonModule,
+        RouterOutlet,
+        RouterLink,
+        RouterLinkActive,
+        MatSidenavModule,
+        MatToolbarModule,
+        MatListModule,
+        MatIconModule,
+        MatButtonModule,
     ],
     templateUrl: './layout.component.html',
-    styleUrl: './layout.component.scss'
+    styleUrl: './layout.component.scss',
 })
 export class LayoutComponent implements OnInit, OnDestroy {
-  private breakpointObserver = inject(BreakpointObserver);
+    private breakpointObserver = inject(BreakpointObserver);
 
-  @ViewChild('sidenav') sidenav!: MatSidenav;
+    @ViewChild('sidenav') sidenav!: MatSidenav;
 
-  isMobile = false;
+    isMobile = false;
 
-  private destroy$ = new Subject<void>();
+    private destroy$ = new Subject<void>();
 
-  ngOnInit(): void {
-    this.breakpointObserver
-      .observe([Breakpoints.Handset, Breakpoints.TabletPortrait])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(result => {
-        this.isMobile = result.matches;
-        if (this.sidenav) {
-          if (this.isMobile) {
-            this.sidenav.close();
-          } else {
-            this.sidenav.open();
-          }
-        }
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  onNavItemClick(): void {
-    if (this.isMobile) {
-      this.sidenav.close();
+    ngOnInit(): void {
+        this.breakpointObserver
+            .observe([Breakpoints.Handset, Breakpoints.TabletPortrait])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((result) => {
+                this.isMobile = result.matches;
+                if (this.sidenav) {
+                    if (this.isMobile) {
+                        this.sidenav.close();
+                    } else {
+                        this.sidenav.open();
+                    }
+                }
+            });
     }
-  }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    onNavItemClick(): void {
+        if (this.isMobile) {
+            this.sidenav.close();
+        }
+    }
 }

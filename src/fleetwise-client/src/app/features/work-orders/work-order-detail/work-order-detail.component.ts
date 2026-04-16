@@ -10,42 +10,46 @@ import { WorkOrder } from '../../../core/models/work-order.model';
 
 @Component({
     selector: 'app-work-order-detail',
+    standalone: true,
     imports: [
         CommonModule,
-        MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+        MatCardModule,
+        MatIconModule,
+        MatButtonModule,
+        MatProgressSpinnerModule,
     ],
     templateUrl: './work-order-detail.component.html',
-    styleUrl: './work-order-detail.component.scss'
+    styleUrl: './work-order-detail.component.scss',
 })
 export class WorkOrderDetailComponent implements OnInit {
-  private workOrderService = inject(WorkOrderService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+    private workOrderService = inject(WorkOrderService);
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
 
-  loading = true;
-  workOrder: WorkOrder | null = null;
+    loading = true;
+    workOrder: WorkOrder | null = null;
 
-  ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    ngOnInit(): void {
+        const id = Number(this.route.snapshot.paramMap.get('id'));
 
-    this.workOrderService.getById(id).subscribe({
-      next: wo => {
-        this.workOrder = wo;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
-  }
-
-  goBack(): void {
-    this.router.navigate(['/work-orders']);
-  }
-
-  goToVehicle(): void {
-    if (this.workOrder) {
-      this.router.navigate(['/vehicles', this.workOrder.vehicleId]);
+        this.workOrderService.getById(id).subscribe({
+            next: (wo) => {
+                this.workOrder = wo;
+                this.loading = false;
+            },
+            error: () => {
+                this.loading = false;
+            },
+        });
     }
-  }
+
+    goBack(): void {
+        this.router.navigate(['/work-orders']);
+    }
+
+    goToVehicle(): void {
+        if (this.workOrder) {
+            this.router.navigate(['/vehicles', this.workOrder.vehicleId]);
+        }
+    }
 }

@@ -1,74 +1,97 @@
 <div class="content-container">
-  <button mat-button (click)="goBack()">
-    <mat-icon>arrow_back</mat-icon>
-    Back to Work Orders
-  </button>
+    <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Work Orders
+    </button>
 
-  @if (loading) {
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-    </div>
-  } @else if (!workOrder) {
-    <p class="empty-message">Work order not found.</p>
-  } @else {
-    <mat-card class="info-card">
-      <mat-card-header>
-        <mat-card-title>Work Order {{ workOrder.workOrderNumber }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">Status</span>
-            <span class="status-badge" [class]="'status-' + workOrder.status.toLowerCase()">{{ workOrder.status }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Priority</span>
-            <span class="priority-badge" [class]="'priority-' + workOrder.priority.toLowerCase()">{{ workOrder.priority }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Vehicle</span>
-            @if (workOrder.vehicle) {
-              <a class="vehicle-link" (click)="goToVehicle()" (keydown.enter)="goToVehicle()" tabindex="0" role="link">
-                {{ workOrder.vehicle.assetNumber }} — {{ workOrder.vehicle.year }} {{ workOrder.vehicle.make }} {{ workOrder.vehicle.model }}
-              </a>
-            } @else {
-              <span class="info-value">Vehicle #{{ workOrder.vehicleId }}</span>
-            }
-          </div>
-          <div class="info-item">
-            <span class="info-label">Assigned Technician</span>
-            <span class="info-value">{{ workOrder.assignedTechnician || '—' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Requested Date</span>
-            <span class="info-value">{{ workOrder.requestedDate | date:'mediumDate' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Completed Date</span>
-            <span class="info-value">{{ workOrder.completedDate ? (workOrder.completedDate | date:'mediumDate') : '—' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Labor Hours</span>
-            <span class="info-value">{{ workOrder.laborHours ?? '—' }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Total Cost</span>
-            <span class="info-value">{{ workOrder.totalCost !== null ? (workOrder.totalCost | currency) : '—' }}</span>
-          </div>
+    @if (loading) {
+        <div class="loading-container">
+            <mat-spinner diameter="48"></mat-spinner>
         </div>
+    } @else if (!workOrder) {
+        <p class="empty-message">Work order not found.</p>
+    } @else {
+        <mat-card class="info-card">
+            <mat-card-header>
+                <mat-card-title>Work Order {{ workOrder.workOrderNumber }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span
+                            class="status-badge"
+                            [class]="'status-' + workOrder.status.toLowerCase()"
+                            >{{ workOrder.status }}</span
+                        >
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Priority</span>
+                        <span
+                            class="priority-badge"
+                            [class]="'priority-' + workOrder.priority.toLowerCase()"
+                            >{{ workOrder.priority }}</span
+                        >
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Vehicle</span>
+                        @if (workOrder.vehicle) {
+                            <a
+                                class="vehicle-link"
+                                (click)="goToVehicle()"
+                                (keydown.enter)="goToVehicle()"
+                                tabindex="0"
+                                role="link"
+                            >
+                                {{ workOrder.vehicle.assetNumber }} — {{ workOrder.vehicle.year }}
+                                {{ workOrder.vehicle.make }} {{ workOrder.vehicle.model }}
+                            </a>
+                        } @else {
+                            <span class="info-value">Vehicle #{{ workOrder.vehicleId }}</span>
+                        }
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Assigned Technician</span>
+                        <span class="info-value">{{ workOrder.assignedTechnician || '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Requested Date</span>
+                        <span class="info-value">{{
+                            workOrder.requestedDate | date: 'mediumDate'
+                        }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Completed Date</span>
+                        <span class="info-value">{{
+                            workOrder.completedDate
+                                ? (workOrder.completedDate | date: 'mediumDate')
+                                : '—'
+                        }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Labor Hours</span>
+                        <span class="info-value">{{ workOrder.laborHours ?? '—' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Cost</span>
+                        <span class="info-value">{{
+                            workOrder.totalCost !== null ? (workOrder.totalCost | currency) : '—'
+                        }}</span>
+                    </div>
+                </div>
 
-        <div class="description-section">
-          <span class="info-label">Description</span>
-          <p>{{ workOrder.description }}</p>
-        </div>
+                <div class="description-section">
+                    <span class="info-label">Description</span>
+                    <p>{{ workOrder.description }}</p>
+                </div>
 
-        @if (workOrder.notes) {
-          <div class="notes-section">
-            <span class="info-label">Notes</span>
-            <p>{{ workOrder.notes }}</p>
-          </div>
-        }
-      </mat-card-content>
-    </mat-card>
-  }
+                @if (workOrder.notes) {
+                    <div class="notes-section">
+                        <span class="info-label">Notes</span>
+                        <p>{{ workOrder.notes }}</p>
+                    </div>
+                }
+            </mat-card-content>
+        </mat-card>
+    }
 </div>

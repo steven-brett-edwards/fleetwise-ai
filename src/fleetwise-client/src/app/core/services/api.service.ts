@@ -5,23 +5,23 @@ import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private http = inject(HttpClient);
+    private http = inject(HttpClient);
 
-  private baseUrl = environment.apiUrl;
+    private baseUrl = environment.apiUrl;
 
-  get<T>(path: string, params?: Record<string, string>): Observable<T> {
-    let httpParams = new HttpParams();
-    if (params) {
-      Object.keys(params).forEach(key => {
-        if (params[key]) {
-          httpParams = httpParams.set(key, params[key]);
+    get<T>(path: string, params?: Record<string, string>): Observable<T> {
+        let httpParams = new HttpParams();
+        if (params) {
+            Object.keys(params).forEach((key) => {
+                if (params[key]) {
+                    httpParams = httpParams.set(key, params[key]);
+                }
+            });
         }
-      });
+        return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams });
     }
-    return this.http.get<T>(`${this.baseUrl}${path}`, { params: httpParams });
-  }
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(`${this.baseUrl}${path}`, body);
-  }
+    post<T>(path: string, body: unknown): Observable<T> {
+        return this.http.post<T>(`${this.baseUrl}${path}`, body);
+    }
 }

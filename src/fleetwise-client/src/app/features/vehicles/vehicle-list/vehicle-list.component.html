@@ -1,94 +1,101 @@
 <div class="content-container">
-  <h1>Vehicles</h1>
+    <h1>Vehicles</h1>
 
-  <div class="filter-bar">
-    <mat-form-field appearance="outline">
-      <mat-label>Status</mat-label>
-      <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
-        <mat-option value="">All</mat-option>
-        @for (status of statusOptions; track status) {
-          <mat-option [value]="status">{{ status }}</mat-option>
+    <div class="filter-bar">
+        <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="statusFilter" (selectionChange)="onFilterChange()">
+                <mat-option value="">All</mat-option>
+                @for (status of statusOptions; track status) {
+                    <mat-option [value]="status">{{ status }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Department</mat-label>
+            <mat-select [(ngModel)]="departmentFilter" (selectionChange)="onFilterChange()">
+                <mat-option value="">All</mat-option>
+                @for (dept of departmentOptions; track dept) {
+                    <mat-option [value]="dept">{{ dept }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Fuel Type</mat-label>
+            <mat-select [(ngModel)]="fuelTypeFilter" (selectionChange)="onFilterChange()">
+                <mat-option value="">All</mat-option>
+                @for (fuel of fuelTypeOptions; track fuel) {
+                    <mat-option [value]="fuel">{{ fuel }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        @if (statusFilter || departmentFilter || fuelTypeFilter) {
+            <button mat-button (click)="clearFilters()">
+                <mat-icon>clear</mat-icon>
+                Clear Filters
+            </button>
         }
-      </mat-select>
-    </mat-form-field>
+    </div>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Department</mat-label>
-      <mat-select [(ngModel)]="departmentFilter" (selectionChange)="onFilterChange()">
-        <mat-option value="">All</mat-option>
-        @for (dept of departmentOptions; track dept) {
-          <mat-option [value]="dept">{{ dept }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    @if (loading) {
+        <div class="loading-container">
+            <mat-spinner diameter="48"></mat-spinner>
+        </div>
+    } @else if (vehicles.length === 0) {
+        <p class="empty-message">No vehicles found.</p>
+    } @else {
+        <div class="table-scroll">
+            <table mat-table [dataSource]="vehicles">
+                <ng-container matColumnDef="assetNumber">
+                    <th mat-header-cell *matHeaderCellDef>Asset #</th>
+                    <td mat-cell *matCellDef="let row">{{ row.assetNumber }}</td>
+                </ng-container>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Fuel Type</mat-label>
-      <mat-select [(ngModel)]="fuelTypeFilter" (selectionChange)="onFilterChange()">
-        <mat-option value="">All</mat-option>
-        @for (fuel of fuelTypeOptions; track fuel) {
-          <mat-option [value]="fuel">{{ fuel }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+                    <td mat-cell *matCellDef="let row">{{ getDescription(row) }}</td>
+                </ng-container>
 
-    @if (statusFilter || departmentFilter || fuelTypeFilter) {
-      <button mat-button (click)="clearFilters()">
-        <mat-icon>clear</mat-icon>
-        Clear Filters
-      </button>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="status-badge" [class]="'status-' + row.status.toLowerCase()">{{
+                            row.status
+                        }}</span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="department">
+                    <th mat-header-cell *matHeaderCellDef>Department</th>
+                    <td mat-cell *matCellDef="let row">{{ row.department }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="fuelType">
+                    <th mat-header-cell *matHeaderCellDef>Fuel Type</th>
+                    <td mat-cell *matCellDef="let row">{{ row.fuelType }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="currentMileage">
+                    <th mat-header-cell *matHeaderCellDef>Mileage</th>
+                    <td mat-cell *matCellDef="let row">{{ row.currentMileage | number }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="location">
+                    <th mat-header-cell *matHeaderCellDef>Location</th>
+                    <td mat-cell *matCellDef="let row">{{ row.location }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr
+                    mat-row
+                    *matRowDef="let row; columns: displayedColumns"
+                    class="clickable-row"
+                    (click)="onRowClick(row)"
+                ></tr>
+            </table>
+        </div>
     }
-  </div>
-
-  @if (loading) {
-    <div class="loading-container">
-      <mat-spinner diameter="48"></mat-spinner>
-    </div>
-  } @else if (vehicles.length === 0) {
-    <p class="empty-message">No vehicles found.</p>
-  } @else {
-    <div class="table-scroll">
-    <table mat-table [dataSource]="vehicles">
-      <ng-container matColumnDef="assetNumber">
-        <th mat-header-cell *matHeaderCellDef>Asset #</th>
-        <td mat-cell *matCellDef="let row">{{ row.assetNumber }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef>Vehicle</th>
-        <td mat-cell *matCellDef="let row">{{ getDescription(row) }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef>Status</th>
-        <td mat-cell *matCellDef="let row">
-          <span class="status-badge" [class]="'status-' + row.status.toLowerCase()">{{ row.status }}</span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="department">
-        <th mat-header-cell *matHeaderCellDef>Department</th>
-        <td mat-cell *matCellDef="let row">{{ row.department }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="fuelType">
-        <th mat-header-cell *matHeaderCellDef>Fuel Type</th>
-        <td mat-cell *matCellDef="let row">{{ row.fuelType }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="currentMileage">
-        <th mat-header-cell *matHeaderCellDef>Mileage</th>
-        <td mat-cell *matCellDef="let row">{{ row.currentMileage | number }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="location">
-        <th mat-header-cell *matHeaderCellDef>Location</th>
-        <td mat-cell *matCellDef="let row">{{ row.location }}</td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="clickable-row" (click)="onRowClick(row)"></tr>
-    </table>
-    </div>
-  }
 </div>

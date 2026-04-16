@@ -12,6 +12,8 @@
     "test": "ng test",
     "coverage": "ng test --watch=false --code-coverage && open coverage/fleetwise-client/index.html",
     "lint": "ng lint",
+    "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\"",
     "develop": "concurrently 'ng lint && ng build && ng serve' 'cd ../FleetWise.Api && dotnet watch run'"
   },
   "private": true,
@@ -34,16 +36,18 @@
     "@angular-devkit/build-angular": "^19.2.24",
     "@angular/cli": "^19.2.24",
     "@angular/compiler-cli": "^19.2.21",
-    "concurrently": "^8.2.0",
     "@types/jasmine": "~5.1.0",
     "angular-eslint": "21.0.1",
+    "concurrently": "^8.2.0",
     "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "prettier": "^3.8.3",
     "typescript": "~5.5.2",
     "typescript-eslint": "8.46.4"
   }
