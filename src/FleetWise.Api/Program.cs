@@ -112,7 +112,7 @@ builder.Services.AddScoped(serviceProvider =>
     kernel.ImportPluginFromObject(new FleetQueryPlugin(vehicleRepo), "FleetQuery");
 
     var maintenanceRepo = serviceProvider.GetRequiredService<IMaintenanceRepository>();
-    kernel.ImportPluginFromObject(new MaintenancePlugin(maintenanceRepo), "Maintenance");
+    kernel.ImportPluginFromObject(new MaintenancePlugin(maintenanceRepo, vehicleRepo), "Maintenance");
 
     var workOrderRepo = serviceProvider.GetRequiredService<IWorkOrderRepository>();
     var partRepo = serviceProvider.GetRequiredService<IPartRepository>();

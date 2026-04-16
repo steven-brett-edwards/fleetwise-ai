@@ -16,12 +16,14 @@ namespace FleetWise.Api.Tests.Plugins;
 public class MaintenancePluginTests
 {
     private readonly Mock<IMaintenanceRepository> _mockMaintenanceRepository = new();
+    private readonly Mock<IVehicleRepository> _mockVehicleRepository = new();
 
     private Kernel CreateKernelWithMaintenancePlugin()
     {
         var kernel = Kernel.CreateBuilder().Build();
         kernel.ImportPluginFromObject(
-            new MaintenancePlugin(_mockMaintenanceRepository.Object), "Maintenance");
+            new MaintenancePlugin(_mockMaintenanceRepository.Object, _mockVehicleRepository.Object),
+            "Maintenance");
         return kernel;
     }
 
@@ -265,6 +267,111 @@ public class MaintenancePluginTests
         maintenanceHistoryJsonResponse.Should().Contain("TireRotation"); // Second record
         maintenanceHistoryJsonResponse.Should().Contain("Sarah Chen");
         maintenanceHistoryJsonResponse.Should().Contain("45");
+    }
+
+    // ── get_maintenance_history_by_asset_number ──────────────────────
+
+    [Fact]
+    public async Task GetMaintenanceHistoryByAssetNumber_WhenVehicleNotFound_ReturnsNoVehicleMessageWithAssetNumber()
+    {
+        // Setup
+        _mockVehicleRepository
+            .Setup(r => r.GetByAssetNumberAsync("V-9999-9999"))
+            .ReturnsAsync((Vehicle?)null);
+
+        var kernelWithMaintenancePlugin = CreateKernelWithMaintenancePlugin();
+
+        // Act
+        var historyResult = await kernelWithMaintenancePlugin.InvokeAsync(
+            "Maintenance", "get_maintenance_history_by_asset_number",
+            new KernelArguments { ["assetNumber"] = "V-9999-9999" });
+
+        // Result
+        historyResult.ToString().Should().Be("No vehicle found with asset number V-9999-9999.");
+        _mockMaintenanceRepository.Verify(r => r.GetByVehicleIdAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetMaintenanceHistoryByAssetNumber_WhenVehicleFoundButNoRecords_ReturnsNoRecordsMessageWithAssetNumber()
+    {
+        // Setup
+        var vehicleWithNoHistory = CreateTestVehicle(assetNumber: "V-2024-0030");
+        vehicleWithNoHistory.Id = 30;
+
+        _mockVehicleRepository
+            .Setup(r => r.GetByAssetNumberAsync("V-2024-0030"))
+            .ReturnsAsync(vehicleWithNoHistory);
+        _mockMaintenanceRepository
+            .Setup(r => r.GetByVehicleIdAsync(30))
+            .ReturnsAsync(new List<MaintenanceRecord>());
+
+        var kernelWithMaintenancePlugin = CreateKernelWithMaintenancePlugin();
+
+        // Act
+        var historyResult = await kernelWithMaintenancePlugin.InvokeAsync(
+            "Maintenance", "get_maintenance_history_by_asset_number",
+            new KernelArguments { ["assetNumber"] = "V-2024-0030" });
+
+        // Result
+        historyResult.ToString().Should().Be("No maintenance records found for vehicle V-2024-0030.");
+    }
+
+    [Fact]
+    public async Task GetMaintenanceHistoryByAssetNumber_WhenRecordsExist_ReturnsFormattedHistory()
+    {
+        // Setup -- asset number resolves to internal vehicle Id, and records are loaded by that Id
+        var vehicleForHistoryLookup = CreateTestVehicle(assetNumber: "V-2017-0007");
+        vehicleForHistoryLookup.Id = 7;
+
+        var twoMaintenanceRecordsForVehicleSeven = new List<MaintenanceRecord>
+        {
+            new()
+            {
+                Id = 1, VehicleId = 7, Vehicle = vehicleForHistoryLookup,
+                MaintenanceType = MaintenanceType.OilChange,
+                PerformedDate = new DateTime(2026, 1, 20),
+                MileageAtService = 141000,
+                Description = "Full synthetic oil change",
+                Cost = 68.00m,
+                TechnicianName = "Sarah Chen"
+            },
+            new()
+            {
+                Id = 2, VehicleId = 7, Vehicle = vehicleForHistoryLookup,
+                MaintenanceType = MaintenanceType.BrakeInspection,
+                PerformedDate = new DateTime(2025, 11, 5),
+                MileageAtService = 138500,
+                Description = "Front brake pads replaced",
+                Cost = 320.50m,
+                TechnicianName = "Mike Torres"
+            }
+        };
+
+        _mockVehicleRepository
+            .Setup(r => r.GetByAssetNumberAsync("V-2017-0007"))
+            .ReturnsAsync(vehicleForHistoryLookup);
+        _mockMaintenanceRepository
+            .Setup(r => r.GetByVehicleIdAsync(7))
+            .ReturnsAsync(twoMaintenanceRecordsForVehicleSeven);
+
+        var kernelWithMaintenancePlugin = CreateKernelWithMaintenancePlugin();
+
+        // Act
+        var historyResult = await kernelWithMaintenancePlugin.InvokeAsync(
+            "Maintenance", "get_maintenance_history_by_asset_number",
+            new KernelArguments { ["assetNumber"] = "V-2017-0007" });
+
+        // Result
+        var historyJsonResponse = historyResult.ToString();
+        historyJsonResponse.Should().Contain("Found 2 maintenance records for vehicle V-2017-0007");
+
+        historyJsonResponse.Should().Contain("OilChange");
+        historyJsonResponse.Should().Contain("Sarah Chen");
+        historyJsonResponse.Should().Contain("68");
+        
+        historyJsonResponse.Should().Contain("BrakeInspection");
+        historyJsonResponse.Should().Contain("Mike Torres");
+        historyJsonResponse.Should().Contain("320.5");
     }
 
     // ── get_maintenance_cost_summary ─────────────────────────────────

@@ -8,7 +8,7 @@ namespace FleetWise.Api.Plugins;
 /// <summary>
 /// Semantic Kernel plugin for maintenance schedules, history, and cost analysis.
 /// </summary>
-public class MaintenancePlugin(IMaintenanceRepository maintenanceRepo)
+public class MaintenancePlugin(IMaintenanceRepository maintenanceRepo, IVehicleRepository vehicleRepo)
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -62,7 +62,7 @@ public class MaintenancePlugin(IMaintenanceRepository maintenanceRepo)
     }
 
     [KernelFunction("get_vehicle_maintenance_history")]
-    [Description("Returns the maintenance history for a specific vehicle by its database ID. Use get_vehicle_by_asset_number first to get the vehicle ID if you only have an asset number.")]
+    [Description("Returns the maintenance history for a specific vehicle by its database ID. Prefer get_maintenance_history_by_asset_number when the user references a vehicle by its asset number (e.g. 'V-2019-0042') -- this function is for the internal integer ID only.")]
     public async Task<string> GetVehicleMaintenanceHistory(
         [Description("The vehicle's database ID (integer)")] int vehicleId)
     {
@@ -83,6 +83,34 @@ public class MaintenancePlugin(IMaintenanceRepository maintenanceRepo)
 
         var json = JsonSerializer.Serialize(projections, JsonOptions);
         return $"Found {records.Count} maintenance records for vehicle ID {vehicleId}\n{json}";
+    }
+
+    [KernelFunction("get_maintenance_history_by_asset_number")]
+    [Description("Returns the maintenance history for a specific vehicle by its asset number (e.g. 'V-2019-0042'). Prefer this over get_vehicle_maintenance_history when the user references a vehicle by asset number -- it avoids the separate ID lookup step.")]
+    public async Task<string> GetMaintenanceHistoryByAssetNumber(
+        [Description("The vehicle's asset number (format: V-YYYY-NNNN)")] string assetNumber)
+    {
+        var vehicle = await vehicleRepo.GetByAssetNumberAsync(assetNumber);
+        if (vehicle is null)
+            return $"No vehicle found with asset number {assetNumber}.";
+
+        var records = await maintenanceRepo.GetByVehicleIdAsync(vehicle.Id);
+
+        if (records.Count == 0)
+            return $"No maintenance records found for vehicle {assetNumber}.";
+
+        var projections = records.Select(r => new
+        {
+            MaintenanceType = r.MaintenanceType.ToString(),
+            r.PerformedDate,
+            r.MileageAtService,
+            r.Description,
+            r.Cost,
+            r.TechnicianName
+        });
+
+        var json = JsonSerializer.Serialize(projections, JsonOptions);
+        return $"Found {records.Count} maintenance records for vehicle {assetNumber}\n{json}";
     }
 
     [KernelFunction("get_maintenance_cost_summary")]
