@@ -1,8 +1,8 @@
 # FleetWise AI
 
-> An AI-powered fleet maintenance assistant built with Angular, .NET, and Microsoft Semantic Kernel
+[![CI](https://github.com/steven-brett-edwards/fleetwise-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/steven-brett-edwards/fleetwise-ai/actions/workflows/ci.yml)
 
-> Under active construction!
+> An AI-powered fleet maintenance assistant built with Angular, .NET, and Microsoft Semantic Kernel
 
 ## What is This?
 
@@ -49,9 +49,9 @@ This project is under active development.
 - [x] Dashboard with fleet summary, overdue/upcoming maintenance
 - [x] Vehicle list and detail views with filtering
 - [x] Work order list and detail views
-- [ ] Mobile responsive layout
-- [ ] Frontend unit tests
-- [ ] CI/CD pipeline
+- [x] Mobile responsive layout (sidenav, dashboard grid, chat bubbles, list filter bars)
+- [x] Frontend unit tests (128 tests, 100% coverage on services + components)
+- [x] CI/CD pipeline (GitHub Actions: parallel backend + frontend jobs with coverage)
 
 ## Running Locally
 
@@ -59,7 +59,7 @@ This project is under active development.
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 20+](https://nodejs.org/)
-- [Ollama](https://ollama.com/) with a chat model pulled (e.g. `ollama pull qwen2.5:3b`)
+- [Ollama](https://ollama.com/) with a chat model pulled (e.g. `ollama pull qwen2.5:7b`)
 
 ### Backend
 
@@ -85,21 +85,23 @@ The Angular app starts at `http://localhost:4200` and proxies API requests to th
 Make sure Ollama is running (`ollama serve`) with both a chat model and an embedding model pulled:
 
 ```bash
-ollama pull qwen2.5:3b        # chat model
+ollama pull qwen2.5:7b        # chat model (tool calling)
 ollama pull nomic-embed-text  # embedding model (for RAG document search)
 ```
 
-The app defaults to `qwen2.5:3b` for chat and `nomic-embed-text` (768 dimensions) for embeddings. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
+The app defaults to `qwen2.5:7b` for chat and `nomic-embed-text` (768 dimensions) for embeddings. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
+
+## Known Issues
+
+**Angular 18 security advisories.** `npm audit` reports 43 vulnerabilities, almost all of which are in Angular 18 itself (XSS via SVG/i18n, XSRF via protocol-relative URLs) or in its build-tool transitives (`esbuild`, `vite`, `rollup`, `webpack`, `tar`, etc.). Fixes require an Angular major-version upgrade (18 -> 19+), which is deferred. The runtime framework CVEs require the app to render attacker-controlled SVG/i18n content or make cross-origin HTTP calls to attacker-influenced URLs -- FleetWise does neither. Build-tool advisories are dev-only and don't ship to production.
 
 ## Coming Next
 
-**Mobile responsive layout** -- sidenav collapses to hamburger menu on small screens, tables scroll horizontally.
+**Python edition.** A parallel rewrite using FastAPI, LangGraph, and Anthropic Claude is in progress as a separate repository.
 
-**Frontend unit tests** -- Karma/Jasmine tests for Angular components and services, matching the 100% coverage standard set on the backend.
+**Angular 19+ upgrade.** Clears the framework-level advisories listed above.
 
-**CI/CD pipeline** -- GitHub Actions workflow for automated build, test, and coverage reporting on every pull request.
-
-**Production polish** -- integration tests, error handling, and deployment configuration.
+**Production polish.** Integration tests, error handling, and deployment configuration.
 
 ## License
 
