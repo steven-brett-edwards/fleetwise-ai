@@ -72,7 +72,7 @@ builder.Services.AddScoped(serviceProvider =>
     {
         case "Ollama":
             var ollamaEndpoint = builder.Configuration["Ollama:Endpoint"] ?? "http://localhost:11434";
-            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "qwen2.5:3b";
+            var ollamaModel = builder.Configuration["Ollama:ChatModel"] ?? "qwen2.5:7b";
             kernelBuilder.AddOpenAIChatCompletion(
                 modelId: ollamaModel,
                 apiKey: "ollama",  // Ollama ignores the API key, but the SDK requires a non-null value
