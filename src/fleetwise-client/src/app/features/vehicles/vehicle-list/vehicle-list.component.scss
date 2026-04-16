@@ -5,9 +5,23 @@
   margin-bottom: 16px;
   flex-wrap: wrap;
 
+  @media (max-width: 599px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
   mat-form-field {
     width: 180px;
+
+    @media (max-width: 599px) {
+      width: 100%;
+    }
   }
+}
+
+.table-scroll {
+  overflow-x: auto;
 }
 
 .loading-container {
@@ -31,10 +45,6 @@ table {
   &:hover {
     background: rgba(0, 0, 0, 0.04);
   }
-}
-
-.table-scroll {
-  overflow-x: auto;
 }
 
 .status-badge {
