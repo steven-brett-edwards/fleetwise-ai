@@ -10,15 +10,14 @@ import { ChatService } from '../../core/services/chat.service';
 import { ChatMessage } from '../../core/models/chat-message.model';
 
 @Component({
-  selector: 'app-chat',
-  standalone: true,
-  imports: [
-    CommonModule, FormsModule,
-    MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatProgressBarModule,
-  ],
-  templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss',
+    selector: 'app-chat',
+    imports: [
+        CommonModule, FormsModule,
+        MatFormFieldModule, MatInputModule, MatButtonModule,
+        MatIconModule, MatProgressBarModule,
+    ],
+    templateUrl: './chat.component.html',
+    styleUrl: './chat.component.scss'
 })
 export class ChatComponent implements AfterViewInit {
   private chatService = inject(ChatService);

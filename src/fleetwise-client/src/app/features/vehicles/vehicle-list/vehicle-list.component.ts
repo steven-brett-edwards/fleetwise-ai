@@ -13,15 +13,14 @@ import { VehicleService } from '../../../core/services/vehicle.service';
 import { Vehicle } from '../../../core/models/vehicle.model';
 
 @Component({
-  selector: 'app-vehicle-list',
-  standalone: true,
-  imports: [
-    CommonModule, FormsModule,
-    MatTableModule, MatSortModule, MatSelectModule, MatFormFieldModule,
-    MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-  ],
-  templateUrl: './vehicle-list.component.html',
-  styleUrl: './vehicle-list.component.scss',
+    selector: 'app-vehicle-list',
+    imports: [
+        CommonModule, FormsModule,
+        MatTableModule, MatSortModule, MatSelectModule, MatFormFieldModule,
+        MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+    ],
+    templateUrl: './vehicle-list.component.html',
+    styleUrl: './vehicle-list.component.scss'
 })
 export class VehicleListComponent implements OnInit {
   private vehicleService = inject(VehicleService);

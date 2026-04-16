@@ -12,15 +12,14 @@ import { WorkOrderService } from '../../../core/services/work-order.service';
 import { WorkOrder } from '../../../core/models/work-order.model';
 
 @Component({
-  selector: 'app-work-order-list',
-  standalone: true,
-  imports: [
-    CommonModule, FormsModule,
-    MatTableModule, MatSelectModule, MatFormFieldModule,
-    MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-  ],
-  templateUrl: './work-order-list.component.html',
-  styleUrl: './work-order-list.component.scss',
+    selector: 'app-work-order-list',
+    imports: [
+        CommonModule, FormsModule,
+        MatTableModule, MatSelectModule, MatFormFieldModule,
+        MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+    ],
+    templateUrl: './work-order-list.component.html',
+    styleUrl: './work-order-list.component.scss'
 })
 export class WorkOrderListComponent implements OnInit {
   private workOrderService = inject(WorkOrderService);

@@ -9,14 +9,13 @@ import { WorkOrderService } from '../../../core/services/work-order.service';
 import { WorkOrder } from '../../../core/models/work-order.model';
 
 @Component({
-  selector: 'app-work-order-detail',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-  ],
-  templateUrl: './work-order-detail.component.html',
-  styleUrl: './work-order-detail.component.scss',
+    selector: 'app-work-order-detail',
+    imports: [
+        CommonModule,
+        MatCardModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+    ],
+    templateUrl: './work-order-detail.component.html',
+    styleUrl: './work-order-detail.component.scss'
 })
 export class WorkOrderDetailComponent implements OnInit {
   private workOrderService = inject(WorkOrderService);

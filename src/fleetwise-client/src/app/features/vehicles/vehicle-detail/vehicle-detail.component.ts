@@ -14,15 +14,14 @@ import { MaintenanceRecord } from '../../../core/models/maintenance.model';
 import { WorkOrder } from '../../../core/models/work-order.model';
 
 @Component({
-  selector: 'app-vehicle-detail',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule, MatTabsModule, MatTableModule,
-    MatIconModule, MatButtonModule, MatProgressSpinnerModule,
-  ],
-  templateUrl: './vehicle-detail.component.html',
-  styleUrl: './vehicle-detail.component.scss',
+    selector: 'app-vehicle-detail',
+    imports: [
+        CommonModule,
+        MatCardModule, MatTabsModule, MatTableModule,
+        MatIconModule, MatButtonModule, MatProgressSpinnerModule,
+    ],
+    templateUrl: './vehicle-detail.component.html',
+    styleUrl: './vehicle-detail.component.scss'
 })
 export class VehicleDetailComponent implements OnInit {
   private vehicleService = inject(VehicleService);

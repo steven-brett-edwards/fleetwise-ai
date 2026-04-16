@@ -13,14 +13,13 @@ import { FleetSummary } from '../../core/models/vehicle.model';
 import { MaintenanceSchedule } from '../../core/models/maintenance.model';
 
 @Component({
-  selector: 'app-dashboard',
-  standalone: true,
-  imports: [
-    CommonModule, RouterLink,
-    MatCardModule, MatTableModule, MatIconModule, MatProgressSpinnerModule,
-  ],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss',
+    selector: 'app-dashboard',
+    imports: [
+        CommonModule, RouterLink,
+        MatCardModule, MatTableModule, MatIconModule, MatProgressSpinnerModule,
+    ],
+    templateUrl: './dashboard.component.html',
+    styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   private vehicleService = inject(VehicleService);
