@@ -6,88 +6,89 @@ import { createMockMaintenanceSchedule } from '../../helpers/mock-data.factory';
 import { MaintenanceSchedule } from '../../../app/core/models/maintenance.model';
 
 describe('MaintenanceService', () => {
-  let service: MaintenanceService;
-  let mockApiService: jasmine.SpyObj<ApiService>;
+    let service: MaintenanceService;
+    let mockApiService: jasmine.SpyObj<ApiService>;
 
-  beforeEach(() => {
-    mockApiService = jasmine.createSpyObj('ApiService', ['get', 'post']);
+    beforeEach(() => {
+        mockApiService = jasmine.createSpyObj('ApiService', ['get', 'post']);
 
-    TestBed.configureTestingModule({
-      providers: [
-        MaintenanceService,
-        { provide: ApiService, useValue: mockApiService },
-      ],
+        TestBed.configureTestingModule({
+            providers: [MaintenanceService, { provide: ApiService, useValue: mockApiService }],
+        });
+
+        service = TestBed.inject(MaintenanceService);
     });
 
-    service = TestBed.inject(MaintenanceService);
-  });
+    it('getOverdue_WhenCalled_CallsApiGetWithCorrectPath', () => {
+        // Setup
+        mockApiService.get.and.returnValue(of([]));
 
-  it('getOverdue_WhenCalled_CallsApiGetWithCorrectPath', () => {
-    // Setup
-    mockApiService.get.and.returnValue(of([]));
+        // Act
+        service.getOverdue().subscribe();
 
-    // Act
-    service.getOverdue().subscribe();
-
-    // Result
-    expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/overdue');
-  });
-
-  it('getOverdue_WhenCalled_ReturnsOverdueSchedules', () => {
-    // Setup
-    const expectedOverdueSchedule = createMockMaintenanceSchedule({ maintenanceType: 'BrakeInspection' });
-    mockApiService.get.and.returnValue(of([expectedOverdueSchedule]));
-    let actualSchedules: MaintenanceSchedule[] = [];
-
-    // Act
-    service.getOverdue().subscribe(s => actualSchedules = s);
-
-    // Result
-    expect(actualSchedules.length).toBe(1);
-    expect(actualSchedules[0].maintenanceType).toBe('BrakeInspection');
-  });
-
-  it('getUpcoming_WithDefaults_CallsApiGetWithDefaultDaysAndMiles', () => {
-    // Setup
-    mockApiService.get.and.returnValue(of([]));
-
-    // Act
-    service.getUpcoming().subscribe();
-
-    // Result
-    expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/upcoming', {
-      days: '30',
-      miles: '5000',
+        // Result
+        expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/overdue');
     });
-  });
 
-  it('getUpcoming_WithCustomValues_CallsApiGetWithProvidedDaysAndMiles', () => {
-    // Setup
-    mockApiService.get.and.returnValue(of([]));
-    const customDays = 60;
-    const customMiles = 10000;
+    it('getOverdue_WhenCalled_ReturnsOverdueSchedules', () => {
+        // Setup
+        const expectedOverdueSchedule = createMockMaintenanceSchedule({
+            maintenanceType: 'BrakeInspection',
+        });
+        mockApiService.get.and.returnValue(of([expectedOverdueSchedule]));
+        let actualSchedules: MaintenanceSchedule[] = [];
 
-    // Act
-    service.getUpcoming(customDays, customMiles).subscribe();
+        // Act
+        service.getOverdue().subscribe((s) => (actualSchedules = s));
 
-    // Result
-    expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/upcoming', {
-      days: '60',
-      miles: '10000',
+        // Result
+        expect(actualSchedules.length).toBe(1);
+        expect(actualSchedules[0].maintenanceType).toBe('BrakeInspection');
     });
-  });
 
-  it('getUpcoming_WhenCalled_ReturnsUpcomingSchedules', () => {
-    // Setup
-    const expectedUpcomingSchedule = createMockMaintenanceSchedule({ maintenanceType: 'TireRotation' });
-    mockApiService.get.and.returnValue(of([expectedUpcomingSchedule]));
-    let actualSchedules: MaintenanceSchedule[] = [];
+    it('getUpcoming_WithDefaults_CallsApiGetWithDefaultDaysAndMiles', () => {
+        // Setup
+        mockApiService.get.and.returnValue(of([]));
 
-    // Act
-    service.getUpcoming().subscribe(s => actualSchedules = s);
+        // Act
+        service.getUpcoming().subscribe();
 
-    // Result
-    expect(actualSchedules.length).toBe(1);
-    expect(actualSchedules[0].maintenanceType).toBe('TireRotation');
-  });
+        // Result
+        expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/upcoming', {
+            days: '30',
+            miles: '5000',
+        });
+    });
+
+    it('getUpcoming_WithCustomValues_CallsApiGetWithProvidedDaysAndMiles', () => {
+        // Setup
+        mockApiService.get.and.returnValue(of([]));
+        const customDays = 60;
+        const customMiles = 10000;
+
+        // Act
+        service.getUpcoming(customDays, customMiles).subscribe();
+
+        // Result
+        expect(mockApiService.get).toHaveBeenCalledWith('/maintenance/upcoming', {
+            days: '60',
+            miles: '10000',
+        });
+    });
+
+    it('getUpcoming_WhenCalled_ReturnsUpcomingSchedules', () => {
+        // Setup
+        const expectedUpcomingSchedule = createMockMaintenanceSchedule({
+            maintenanceType: 'TireRotation',
+        });
+        mockApiService.get.and.returnValue(of([expectedUpcomingSchedule]));
+        let actualSchedules: MaintenanceSchedule[] = [];
+
+        // Act
+        service.getUpcoming().subscribe((s) => (actualSchedules = s));
+
+        // Result
+        expect(actualSchedules.length).toBe(1);
+        expect(actualSchedules[0].maintenanceType).toBe('TireRotation');
+    });
 });

@@ -1,44 +1,53 @@
 <div class="chat-container">
-  <div class="message-list" #messageList>
-    @if (messages.length === 0) {
-      <div class="welcome">
-        <mat-icon class="welcome-icon">chat</mat-icon>
-        <h2>FleetWise AI Assistant</h2>
-        <p>Ask me anything about your fleet. Try:</p>
-        <ul>
-          <li>"How many vehicles are in the fleet?"</li>
-          <li>"Which vehicles are overdue for maintenance?"</li>
-          <li>"Show me all open work orders"</li>
-        </ul>
-      </div>
-    }
+    <div class="message-list" #messageList>
+        @if (messages.length === 0) {
+            <div class="welcome">
+                <mat-icon class="welcome-icon">chat</mat-icon>
+                <h2>FleetWise AI Assistant</h2>
+                <p>Ask me anything about your fleet. Try:</p>
+                <ul>
+                    <li>"How many vehicles are in the fleet?"</li>
+                    <li>"Which vehicles are overdue for maintenance?"</li>
+                    <li>"Show me all open work orders"</li>
+                </ul>
+            </div>
+        }
 
-    @for (msg of messages; track msg.timestamp) {
-      <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
-        <div class="message-bubble">
-          <div class="message-content">{{ msg.content }}</div>
-        </div>
-      </div>
-    }
+        @for (msg of messages; track msg.timestamp) {
+            <div
+                class="message"
+                [class.user]="msg.role === 'user'"
+                [class.assistant]="msg.role === 'assistant'"
+            >
+                <div class="message-bubble">
+                    <div class="message-content">{{ msg.content }}</div>
+                </div>
+            </div>
+        }
 
-    @if (streaming) {
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    }
-  </div>
+        @if (streaming) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+    </div>
 
-  <div class="input-area">
-    <mat-form-field appearance="outline">
-      <textarea
-        matInput
-        [(ngModel)]="userInput"
-        (keydown)="onKeydown($event)"
-        placeholder="Ask about your fleet..."
-        rows="1"
-        [disabled]="streaming"
-      ></textarea>
-    </mat-form-field>
-    <button mat-fab color="primary" (click)="send()" [disabled]="!userInput.trim() || streaming">
-      <mat-icon>send</mat-icon>
-    </button>
-  </div>
+    <div class="input-area">
+        <mat-form-field appearance="outline">
+            <textarea
+                matInput
+                [(ngModel)]="userInput"
+                (keydown)="onKeydown($event)"
+                placeholder="Ask about your fleet..."
+                rows="1"
+                [disabled]="streaming"
+            ></textarea>
+        </mat-form-field>
+        <button
+            mat-fab
+            color="primary"
+            (click)="send()"
+            [disabled]="!userInput.trim() || streaming"
+        >
+            <mat-icon>send</mat-icon>
+        </button>
+    </div>
 </div>

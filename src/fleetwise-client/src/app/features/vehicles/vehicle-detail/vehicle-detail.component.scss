@@ -1,103 +1,103 @@
 .loading-container {
-  display: flex;
-  justify-content: center;
-  padding: 64px;
+    display: flex;
+    justify-content: center;
+    padding: 64px;
 }
 
 .empty-message {
-  color: rgba(0, 0, 0, 0.6);
-  padding: 16px 0;
+    color: rgba(0, 0, 0, 0.6);
+    padding: 16px 0;
 }
 
 .info-card {
-  margin: 16px 0;
+    margin: 16px 0;
 }
 
 .info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  padding: 8px 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 8px 0;
 }
 
 .info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .info-label {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .info-value {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.87);
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87);
 }
 
 .notes {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
 
-  p {
-    margin: 4px 0 0;
-  }
+    p {
+        margin: 4px 0 0;
+    }
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
 
-  &.status-active {
-    background: #e8f5e9;
-    color: #2e7d32;
-  }
+    &.status-active {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
 
-  &.status-inshop {
-    background: #fff8e1;
-    color: #f57f17;
-  }
+    &.status-inshop {
+        background: #fff8e1;
+        color: #f57f17;
+    }
 
-  &.status-outofservice {
-    background: #fbe9e7;
-    color: #d84315;
-  }
+    &.status-outofservice {
+        background: #fbe9e7;
+        color: #d84315;
+    }
 
-  &.status-disposed {
-    background: #efebe9;
-    color: #6d4c41;
-  }
+    &.status-disposed {
+        background: #efebe9;
+        color: #6d4c41;
+    }
 }
 
 mat-tab-group {
-  margin-top: 16px;
+    margin-top: 16px;
 }
 
 table {
-  width: 100%;
+    width: 100%;
 }
 
 .table-scroll {
-  overflow-x: auto;
+    overflow-x: auto;
 }
 
 .clickable-row {
-  cursor: pointer;
+    cursor: pointer;
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
+    &:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
 }
 
 @media (max-width: 599px) {
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
 }
