@@ -39,12 +39,12 @@ This project is under active development.
 - [x] Seed data representing a realistic 35-vehicle municipal fleet
 - [x] REST API with 9 endpoints
 - [x] Angular frontend scaffold with Material, routing, and services
-- [x] Semantic Kernel plugins with function calling (12 functions across 4 plugins)
+- [x] Semantic Kernel plugins with function calling (13 functions across 4 plugins)
 - [x] Chat orchestration service with conversation history
 - [x] Sync and streaming (SSE) chat endpoints
 - [x] Provider-swap architecture (Ollama / Azure OpenAI / OpenAI via config)
 - [x] RAG pipeline with fleet management documentation (vector embeddings + semantic search)
-- [x] 86 unit tests with 100% coverage on all API components
+- [x] 89 unit tests with 100% coverage on all API components
 - [x] Angular chat UI with SSE streaming responses
 - [x] Dashboard with fleet summary, overdue/upcoming maintenance
 - [x] Vehicle list and detail views with filtering
