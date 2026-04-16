@@ -15,7 +15,7 @@ A fleet manager can ask questions like:
 - "Show me all critical work orders"
 - "Which vehicles have the highest lifetime maintenance costs?"
 
-The AI answers these questions by querying a real database through Semantic Kernel function calling plugins and retrieving relevant maintenance documentation through RAG (Retrieval-Augmented Generation).
+The AI answers these questions by querying a real database through Semantic Kernel function calling plugins and retrieving relevant fleet management documentation (maintenance procedures, safety policies, SOPs) through RAG (Retrieval-Augmented Generation) with vector embeddings.
 
 ## Tech Stack
 
@@ -39,19 +39,18 @@ This project is under active development.
 - [x] Seed data representing a realistic 35-vehicle municipal fleet
 - [x] REST API with 9 endpoints
 - [x] Angular frontend scaffold with Material, routing, and services
-- [x] Semantic Kernel plugins with function calling (11 functions across 3 plugins)
+- [x] Semantic Kernel plugins with function calling (12 functions across 4 plugins)
 - [x] Chat orchestration service with conversation history
 - [x] Sync and streaming (SSE) chat endpoints
 - [x] Provider-swap architecture (Ollama / Azure OpenAI / OpenAI via config)
-- [x] 68 unit tests with 100% coverage on all API components
-- [ ] RAG pipeline with maintenance documentation
+- [x] RAG pipeline with fleet management documentation (vector embeddings + semantic search)
+- [x] 86 unit tests with 100% coverage on all API components
 - [x] Angular chat UI with SSE streaming responses
 - [x] Dashboard with fleet summary, overdue/upcoming maintenance
 - [x] Vehicle list and detail views with filtering
 - [x] Work order list and detail views
 - [ ] Mobile responsive layout
 - [ ] Frontend unit tests
-- [ ] RAG pipeline with maintenance documentation
 - [ ] CI/CD pipeline
 
 ## Running Locally
@@ -83,21 +82,24 @@ The Angular app starts at `http://localhost:4200` and proxies API requests to th
 
 ### Ollama
 
-Make sure Ollama is running (`ollama serve`) with a chat model pulled:
+Make sure Ollama is running (`ollama serve`) with both a chat model and an embedding model pulled:
 
 ```bash
-ollama pull qwen2.5:3b
+ollama pull qwen2.5:3b        # chat model
+ollama pull nomic-embed-text  # embedding model (for RAG document search)
 ```
 
-The app defaults to `qwen2.5:3b` via Ollama. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
+The app defaults to `qwen2.5:3b` for chat and `nomic-embed-text` (768 dimensions) for embeddings. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
 
 ## Coming Next
 
 **Mobile responsive layout** -- sidenav collapses to hamburger menu on small screens, tables scroll horizontally.
 
-**RAG (Retrieval-Augmented Generation)** -- a document ingestion pipeline for fleet manuals, SOPs, and warranty documentation. The LLM will be able to cite actual maintenance docs when answering questions, not just query database tables. Vector embeddings powered by Ollama's `nomic-embed-text` model.
+**Frontend unit tests** -- Karma/Jasmine tests for Angular components and services, matching the 100% coverage standard set on the backend.
 
-**Production polish** -- Azure OpenAI provider swap, integration tests, error handling, and deployment configuration.
+**CI/CD pipeline** -- GitHub Actions workflow for automated build, test, and coverage reporting on every pull request.
+
+**Production polish** -- integration tests, error handling, and deployment configuration.
 
 ## License
 
