@@ -93,22 +93,109 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
-        logger.LogInformation("Streaming message for conversation {ConversationId}", conversationId);
+        logger.LogInformation(
+            "Streaming message for conversation {ConversationId} (history depth: {Depth})",
+            conversationId,
+            history.Count);
 
         // GetStreamingChatMessageContentsAsync returns chunks as they arrive.
-        // SK handles the function calling loop internally;
-        // tool calls execute before text chunks start flowing.
+        // SK handles the function calling loop internally; tool calls execute
+        // before text chunks start flowing. SK mutates the `history` object in
+        // place as it runs the tool-call loop (appending assistant tool_calls
+        // messages and tool results), but it does NOT append the final streamed
+        // assistant text -- we accumulate that ourselves below.
+        var chunks = SafeStreamChunksAsync(chatCompletionService, history, executionSettings, conversationId, cancellationToken);
+
         var fullResponse = new System.Text.StringBuilder();
-        await foreach (var chunk in chatCompletionService.GetStreamingChatMessageContentsAsync(
-            history, executionSettings, kernel, cancellationToken))
+        await foreach (var chunk in chunks.WithCancellation(cancellationToken))
         {
-            if (!string.IsNullOrEmpty(chunk.Content))
-            {
-                fullResponse.Append(chunk.Content);
-                yield return chunk.Content;
-            }
+            fullResponse.Append(chunk);
+            yield return chunk;
         }
 
-        history.AddAssistantMessage(fullResponse.ToString());
+        if (fullResponse.Length > 0)
+        {
+            history.AddAssistantMessage(fullResponse.ToString());
+        }
+    }
+
+    // Wraps the streaming call so that any exception thrown by the LLM connector
+    // (e.g. Groq rejecting a malformed tool-call history, rate limits, timeouts)
+    // is logged with full context and surfaced to the client as a plain-text
+    // error chunk instead of tearing down the HTTP response with an unhandled
+    // exception. Terminating mid-stream strips the CORS headers the browser
+    // needs, so the client sees a spurious CORS error instead of the real cause.
+    private async IAsyncEnumerable<string> SafeStreamChunksAsync(
+        IChatCompletionService chatCompletionService,
+        ChatHistory history,
+        OpenAIPromptExecutionSettings executionSettings,
+        string conversationId,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        IAsyncEnumerator<StreamingChatMessageContent>? enumerator = null;
+        string? startupError = null;
+        try
+        {
+            enumerator = chatCompletionService
+                .GetStreamingChatMessageContentsAsync(history, executionSettings, kernel, cancellationToken)
+                .GetAsyncEnumerator(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to start streaming for conversation {ConversationId}", conversationId);
+            startupError = ex.Message;
+        }
+
+        if (startupError is not null || enumerator is null)
+        {
+            yield return $"\n\n*An error occurred: {startupError ?? "unable to start stream"}*";
+            yield break;
+        }
+
+        try
+        {
+            while (true)
+            {
+                StreamingChatMessageContent? chunk;
+                string? midStreamError = null;
+                try
+                {
+                    if (!await enumerator.MoveNextAsync())
+                    {
+                        yield break;
+                    }
+                    chunk = enumerator.Current;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error streaming chunk for conversation {ConversationId}", conversationId);
+                    midStreamError = ex.Message;
+                    chunk = null;
+                }
+
+                if (midStreamError is not null)
+                {
+                    yield return $"\n\n*An error occurred mid-stream: {midStreamError}*";
+                    yield break;
+                }
+
+                if (chunk is not null && !string.IsNullOrEmpty(chunk.Content))
+                {
+                    yield return chunk.Content;
+                }
+            }
+        }
+        finally
+        {
+            await enumerator.DisposeAsync();
+        }
     }
 }
