@@ -57,7 +57,7 @@ A chat prompt travels from the Angular SPA to `/api/chat/stream`, where the orch
 | AI Orchestration | Microsoft Semantic Kernel 1.74.0                 |
 | AI Abstractions  | Microsoft.Extensions.AI (IChatClient)            |
 | Database         | SQLite (dev) / SQL Server (prod)                 |
-| LLM              | Ollama (local/free) or Azure OpenAI (production) |
+| LLM              | Ollama (local), Groq (hosted demo), Azure OpenAI / OpenAI (optional) |
 | Vector Store     | In-Memory (Semantic Kernel)                      |
 | Observability    | .NET Aspire                                      |
 
@@ -138,6 +138,41 @@ ollama pull nomic-embed-text  # embedding model (for RAG document search)
 ```
 
 The app defaults to `qwen2.5:7b` for chat and `nomic-embed-text` (768 dimensions) for embeddings. To use a different provider (Azure OpenAI, OpenAI), set `AiProvider` and the corresponding section in `appsettings.json`.
+
+## Deploying to Render
+
+The repo ships with a [`render.yaml`](./render.yaml) blueprint that stands up
+the full stack on [Render](https://render.com/)'s free tier using
+[Groq](https://groq.com/) for chat + function calling.
+
+**Why Groq for the hosted demo:** free, no credit card, sub-second
+first-token latency, and its OpenAI-compatible API supports tool calling
+out of the box. The trade-off is that Groq has no embeddings endpoint, so
+the hosted deployment runs chat + the three database plugins (FleetQuery,
+Maintenance, WorkOrder) but skips the DocumentSearch / RAG plugin. Run
+locally against Ollama if you want to see RAG in action.
+
+### Prerequisites
+
+1. A [Render account](https://render.com/) (GitHub OAuth, no credit card).
+2. A [Groq API key](https://console.groq.com/keys) (email sign-up, no credit card).
+
+### Deploy
+
+1. Fork or push this repo to your GitHub account.
+2. In Render, **New → Blueprint**, point it at the repo, pick the `main` branch.
+3. Render reads `render.yaml` and provisions two services: `fleetwise-api`
+   (Docker) and `fleetwise-frontend` (static site).
+4. After the first build, open the `fleetwise-api` service → **Environment**
+   and paste your Groq API key into `Groq__ApiKey`. Trigger a manual redeploy
+   so the key takes effect.
+5. Open the frontend URL — the SPA proxies `/api/*` to the API service via a
+   Render rewrite rule, so everything speaks same-origin.
+
+Free-tier web services sleep after 15 minutes of inactivity, so the first
+request after a quiet period takes ~30s to cold-start. SQLite data is
+reseeded from `SeedData.Initialize` on each boot — perfect for a demo,
+not for state that needs to survive a restart.
 
 ## Coming Next
 

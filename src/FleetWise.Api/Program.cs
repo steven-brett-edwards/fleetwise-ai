@@ -31,6 +31,10 @@ var aiProvider = builder.Configuration["AiProvider"] ?? "Ollama";
 
 // Embedding generator -- registered on the app container (not just the Kernel) so that
 // both the Kernel factory and the startup ingestion service can resolve it.
+// Groq is intentionally omitted here: Groq's OpenAI-compatible API exposes chat
+// completion + tool calling but no embeddings endpoint. When AiProvider=Groq the
+// DocumentSearch plugin and the startup document ingestion are both skipped,
+// leaving the other three plugins (FleetQuery / Maintenance / WorkOrder) live.
 switch (aiProvider)
 {
     case "Ollama":
@@ -61,6 +65,9 @@ switch (aiProvider)
         builder.Services.AddOpenAIEmbeddingGenerator(
             modelId: openAiEmbedModel,
             apiKey: openAiEmbedKey);
+        break;
+    case "Groq":
+        // No embedding provider -- RAG is disabled in Groq deployments.
         break;
 }
 
@@ -100,8 +107,21 @@ builder.Services.AddScoped(serviceProvider =>
                 apiKey: openAiApiKey);
             break;
 
+        case "Groq":
+            // Groq exposes an OpenAI-compatible chat completions API at /openai/v1.
+            // Chat + tool calling are supported; embeddings are not -- see note above.
+            var groqEndpoint = builder.Configuration["Groq:Endpoint"] ?? "https://api.groq.com/openai/v1";
+            var groqModel = builder.Configuration["Groq:ChatModel"] ?? "openai/gpt-oss-20b";
+            var groqApiKey = builder.Configuration["Groq:ApiKey"]
+                ?? throw new InvalidOperationException("Groq:ApiKey is required when AiProvider is Groq");
+            kernelBuilder.AddOpenAIChatCompletion(
+                modelId: groqModel,
+                apiKey: groqApiKey,
+                endpoint: new Uri(groqEndpoint));
+            break;
+
         default:
-            throw new InvalidOperationException($"Unknown AiProvider: {aiProvider}. Valid values: Ollama, AzureOpenAI, OpenAI");
+            throw new InvalidOperationException($"Unknown AiProvider: {aiProvider}. Valid values: Ollama, AzureOpenAI, OpenAI, Groq");
     }
 
     var kernel = kernelBuilder.Build();
@@ -118,9 +138,14 @@ builder.Services.AddScoped(serviceProvider =>
     var partRepo = serviceProvider.GetRequiredService<IPartRepository>();
     kernel.ImportPluginFromObject(new WorkOrderPlugin(workOrderRepo, partRepo), "WorkOrder");
 
-    var embeddingService = serviceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
-    var vectorStore = serviceProvider.GetRequiredService<InMemoryVectorStore>();
-    kernel.ImportPluginFromObject(new DocumentSearchPlugin(embeddingService, vectorStore), "DocumentSearch");
+    // DocumentSearch plugin is only registered when an embedding generator is available.
+    // With AiProvider=Groq we ship without RAG, so the LLM simply won't see this tool.
+    var embeddingService = serviceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
+    if (embeddingService is not null)
+    {
+        var vectorStore = serviceProvider.GetRequiredService<InMemoryVectorStore>();
+        kernel.ImportPluginFromObject(new DocumentSearchPlugin(embeddingService, vectorStore), "DocumentSearch");
+    }
 
     return kernel;
 });
@@ -161,14 +186,19 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<FleetDbContext>();
     SeedData.Initialize(context);
     var docsPath = Path.Combine(app.Environment.ContentRootPath, "..", "..", "data", "documents");
+    var startupEmbedding = scope.ServiceProvider.GetService<IEmbeddingGenerator<string, Embedding<float>>>();
 
-    if (Directory.Exists(docsPath))
+    if (startupEmbedding is null)
     {
-        var embeddingService = scope.ServiceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("No embedding generator registered (AiProvider={AiProvider}). Skipping document ingestion; RAG disabled.", aiProvider);
+    }
+    else if (Directory.Exists(docsPath))
+    {
         var vectorStore = scope.ServiceProvider.GetRequiredService<InMemoryVectorStore>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DocumentIngestionService>>();
 
-        var ingestionService = new DocumentIngestionService(embeddingService, vectorStore, logger);
+        var ingestionService = new DocumentIngestionService(startupEmbedding, vectorStore, logger);
         await ingestionService.IngestDocumentsAsync(docsPath);
     }
     else
