@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, viewChild } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -28,9 +28,9 @@ import { takeUntil } from 'rxjs/operators';
 export class LayoutComponent implements OnInit, OnDestroy {
     private breakpointObserver = inject(BreakpointObserver);
 
-    @ViewChild('sidenav') sidenav!: MatSidenav;
+    readonly sidenav = viewChild<MatSidenav>('sidenav');
 
-    isMobile = false;
+    readonly isMobile = signal(false);
 
     private destroy$ = new Subject<void>();
 
@@ -39,12 +39,13 @@ export class LayoutComponent implements OnInit, OnDestroy {
             .observe([Breakpoints.Handset, Breakpoints.TabletPortrait])
             .pipe(takeUntil(this.destroy$))
             .subscribe((result) => {
-                this.isMobile = result.matches;
-                if (this.sidenav) {
-                    if (this.isMobile) {
-                        this.sidenav.close();
+                this.isMobile.set(result.matches);
+                const sidenav = this.sidenav();
+                if (sidenav) {
+                    if (result.matches) {
+                        sidenav.close();
                     } else {
-                        this.sidenav.open();
+                        sidenav.open();
                     }
                 }
             });
@@ -56,8 +57,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
 
     onNavItemClick(): void {
-        if (this.isMobile) {
-            this.sidenav.close();
+        if (this.isMobile()) {
+            this.sidenav()?.close();
         }
     }
 }
