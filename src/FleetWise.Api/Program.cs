@@ -168,11 +168,16 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new() { Title = "FleetWise AI API", Version = "v1" });
 });
 
-// CORS for Angular dev server
+// CORS -- the Angular dev server and (optionally) a deployed frontend
+// live on different origins from this API. Allowed origins are driven by
+// config (Cors:AllowedOrigins array) with a localhost fallback for dev.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngularDev", policy =>
-        policy.WithOrigins("http://localhost:4200")
+    var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+        ?? ["http://localhost:4200"];
+
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());
@@ -217,7 +222,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowAngularDev");
+app.UseCors("AllowFrontend");
 app.MapControllers();
 
 await app.RunAsync();

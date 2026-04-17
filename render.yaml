@@ -48,6 +48,12 @@ services:
         sync: false  # paste the real key in the Render dashboard after first deploy
       - key: ConnectionStrings__DefaultConnection
         value: Data Source=/app/data/db/fleetwise.db
+      # CORS: allow the deployed frontend origin (and localhost for smoke tests).
+      # Indexed keys (__0, __1) bind to a string[] at Cors:AllowedOrigins.
+      - key: Cors__AllowedOrigins__0
+        value: https://fleetwise-frontend.onrender.com
+      - key: Cors__AllowedOrigins__1
+        value: http://localhost:4200
 
   - type: web
     name: fleetwise-frontend
@@ -56,12 +62,12 @@ services:
     buildCommand: cd src/fleetwise-client && npm ci && npm run build -- --configuration production
     staticPublishPath: ./src/fleetwise-client/dist/fleetwise-client/browser
     routes:
-      # Reverse-proxy /api/* to the API service so the SPA stays same-origin.
-      - type: rewrite
-        source: /api/*
-        destination: https://fleetwise-api.onrender.com/api/:splat
       # SPA fallback -- every non-asset path returns index.html so Angular
-      # client-side routing works on hard refresh.
+      # client-side routing works on hard refresh. The SPA talks to the API
+      # via the absolute URL baked into environment.prod.ts; CORS is enabled
+      # on the API to permit this cross-origin call. Render static-site
+      # rewrites to a different service are intentionally not used -- they
+      # ship requests through as-is and don't interpolate wildcard tokens.
       - type: rewrite
         source: /*
         destination: /index.html
