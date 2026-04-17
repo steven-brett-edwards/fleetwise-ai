@@ -51,7 +51,7 @@ services:
       # CORS: allow the deployed frontend origin (and localhost for smoke tests).
       # Indexed keys (__0, __1) bind to a string[] at Cors:AllowedOrigins.
       - key: Cors__AllowedOrigins__0
-        value: https://fleetwise-frontend-rr3g.onrender.com
+        value: https://fleetwise-frontend.onrender.com
       - key: Cors__AllowedOrigins__1
         value: http://localhost:4200
 
