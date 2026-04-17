@@ -52,7 +52,7 @@ services:
   - type: web
     name: fleetwise-frontend
     runtime: static
-    plan: free
+    # Static sites on Render are always free-tier / edge-hosted; no `plan` field applies.
     buildCommand: cd src/fleetwise-client && npm ci && npm run build -- --configuration production
     staticPublishPath: ./src/fleetwise-client/dist/fleetwise-client/browser
     routes:
