@@ -1,0 +1,46 @@
+# FleetWise AI local stack.
+#
+# Default (`docker compose up`):
+#   Runs API + frontend in containers and points the API at an Ollama
+#   instance running on the host at localhost:11434. Fast if you already
+#   have `ollama serve` running with qwen2.5:7b + nomic-embed-text pulled.
+#
+# Full self-contained stack:
+#   docker compose -f docker-compose.yml -f docker-compose.full.yml up
+#   Also runs Ollama in a container and pulls the models on first boot.
+#   ~5 GB download the first time, then cached on the `ollama-models` volume.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/FleetWise.Api/Dockerfile
+    image: fleetwise-ai/api:dev
+    ports:
+      - "5100:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Ollama__Endpoint: ${OLLAMA_ENDPOINT:-http://host.docker.internal:11434}
+      Ollama__ChatModel: ${OLLAMA_CHAT_MODEL:-qwen2.5:7b}
+      Ollama__EmbeddingModel: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
+    extra_hosts:
+      # Linux doesn't resolve host.docker.internal by default; this
+      # line makes the default stack work on Linux too.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - fleetwise-db:/app/data/db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: src/fleetwise-client
+      dockerfile: Dockerfile
+    image: fleetwise-ai/frontend:dev
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  fleetwise-db:
