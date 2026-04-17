@@ -34,7 +34,10 @@ describe('LayoutComponent', () => {
 
         const fixture = TestBed.createComponent(LayoutComponent);
         component = fixture.componentInstance;
-        component.sidenav = mockSidenav;
+        Object.defineProperty(component, 'sidenav', {
+            value: () => mockSidenav,
+            configurable: true,
+        });
     });
 
     it('ngOnInit_WhenBreakpointMatchesMobile_SetsIsMobileTrue', () => {
@@ -45,7 +48,7 @@ describe('LayoutComponent', () => {
         component.ngOnInit();
 
         // Result
-        expect(component.isMobile).toBeTrue();
+        expect(component.isMobile()).toBeTrue();
     });
 
     it('ngOnInit_WhenBreakpointDoesNotMatch_SetsIsMobileFalse', () => {
@@ -56,7 +59,7 @@ describe('LayoutComponent', () => {
         component.ngOnInit();
 
         // Result
-        expect(component.isMobile).toBeFalse();
+        expect(component.isMobile()).toBeFalse();
     });
 
     it('ngOnInit_WhenMobileAndSidenavExists_ClosesSidenav', () => {
@@ -83,7 +86,10 @@ describe('LayoutComponent', () => {
 
     it('ngOnInit_WhenSidenavNotYetAvailable_DoesNotThrow', () => {
         // Setup
-        component.sidenav = undefined as unknown as MatSidenav;
+        Object.defineProperty(component, 'sidenav', {
+            value: () => undefined,
+            configurable: true,
+        });
         breakpointSubject.next({ matches: true, breakpoints: {} });
 
         // Act & Result
@@ -116,19 +122,19 @@ describe('LayoutComponent', () => {
     it('ngOnDestroy_WhenCalled_UnsubscribesFromBreakpointObserver', () => {
         // Setup
         component.ngOnInit();
-        component.isMobile = false;
+        component.isMobile.set(false);
         component.ngOnDestroy();
 
         // Act
         breakpointSubject.next({ matches: true, breakpoints: {} });
 
         // Result
-        expect(component.isMobile).toBeFalse();
+        expect(component.isMobile()).toBeFalse();
     });
 
     it('onNavItemClick_WhenMobile_ClosesSidenav', () => {
         // Setup
-        component.isMobile = true;
+        component.isMobile.set(true);
 
         // Act
         component.onNavItemClick();
@@ -139,7 +145,7 @@ describe('LayoutComponent', () => {
 
     it('onNavItemClick_WhenDesktop_DoesNotCloseSidenav', () => {
         // Setup
-        component.isMobile = false;
+        component.isMobile.set(false);
         mockSidenav.close.calls.reset();
 
         // Act

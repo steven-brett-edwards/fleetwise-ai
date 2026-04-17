@@ -1,4 +1,4 @@
-import { Component, ElementRef, AfterViewInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, AfterViewInit, inject, signal, viewChild } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -26,14 +26,14 @@ import { ChatMessage } from '../../core/models/chat-message.model';
 export class ChatComponent implements AfterViewInit {
     private chatService = inject(ChatService);
 
-    @ViewChild('messageList') messageList!: ElementRef<HTMLDivElement>;
+    readonly messageList = viewChild<ElementRef<HTMLDivElement>>('messageList');
 
     get messages(): ChatMessage[] {
         return this.chatService.messages;
     }
 
     userInput = '';
-    streaming = false;
+    readonly streaming = signal(false);
 
     ngAfterViewInit(): void {
         this.scrollToBottom();
@@ -41,7 +41,7 @@ export class ChatComponent implements AfterViewInit {
 
     send(): void {
         const message = this.userInput.trim();
-        if (!message || this.streaming) return;
+        if (!message || this.streaming()) return;
 
         this.messages.push({
             role: 'user',
@@ -50,7 +50,7 @@ export class ChatComponent implements AfterViewInit {
         });
 
         this.userInput = '';
-        this.streaming = true;
+        this.streaming.set(true);
 
         const assistantMessage: ChatMessage = {
             role: 'assistant',
@@ -69,10 +69,10 @@ export class ChatComponent implements AfterViewInit {
                 },
                 error: () => {
                     assistantMessage.content += '\n\n*An error occurred. Please try again.*';
-                    this.streaming = false;
+                    this.streaming.set(false);
                 },
                 complete: () => {
-                    this.streaming = false;
+                    this.streaming.set(false);
                 },
             });
     }
@@ -86,7 +86,7 @@ export class ChatComponent implements AfterViewInit {
 
     private scrollToBottom(): void {
         setTimeout(() => {
-            const el = this.messageList?.nativeElement;
+            const el = this.messageList()?.nativeElement;
             if (el) el.scrollTop = el.scrollHeight;
         });
     }

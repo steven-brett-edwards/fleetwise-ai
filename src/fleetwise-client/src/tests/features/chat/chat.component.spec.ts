@@ -34,9 +34,13 @@ describe('ChatComponent', () => {
 
         const fixture = TestBed.createComponent(ChatComponent);
         component = fixture.componentInstance;
-        component.messageList = {
+        const messageListStub = {
             nativeElement: { scrollTop: 0, scrollHeight: 500 },
         } as ElementRef<HTMLDivElement>;
+        Object.defineProperty(component, 'messageList', {
+            value: () => messageListStub,
+            configurable: true,
+        });
     });
 
     it('messages_WhenAccessed_ReturnsChatServiceMessages', () => {
@@ -63,7 +67,7 @@ describe('ChatComponent', () => {
     it('send_WhenStreaming_DoesNotCallService', () => {
         // Setup
         component.userInput = 'Hello';
-        component.streaming = true;
+        component.streaming.set(true);
 
         // Act
         component.send();
@@ -115,7 +119,7 @@ describe('ChatComponent', () => {
         component.send();
 
         // Result
-        expect(component.streaming).toBeTrue();
+        expect(component.streaming()).toBeTrue();
     });
 
     it('send_WhenValidMessage_CallsStreamMessageWithCorrectRequest', () => {
@@ -156,7 +160,7 @@ describe('ChatComponent', () => {
         streamSubject.complete();
 
         // Result
-        expect(component.streaming).toBeFalse();
+        expect(component.streaming()).toBeFalse();
     });
 
     it('send_WhenStreamErrors_AppendsErrorMessageAndSetsStreamingFalse', () => {
@@ -169,7 +173,7 @@ describe('ChatComponent', () => {
 
         // Result
         expect(mockChatService.messages[1].content).toContain('An error occurred');
-        expect(component.streaming).toBeFalse();
+        expect(component.streaming()).toBeFalse();
     });
 
     it('onKeydown_WhenEnterWithoutShift_CallsSend', () => {

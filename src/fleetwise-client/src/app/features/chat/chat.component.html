@@ -25,7 +25,7 @@
             </div>
         }
 
-        @if (streaming) {
+        @if (streaming()) {
             <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         }
     </div>
@@ -38,14 +38,14 @@
                 (keydown)="onKeydown($event)"
                 placeholder="Ask about your fleet..."
                 rows="1"
-                [disabled]="streaming"
+                [disabled]="streaming()"
             ></textarea>
         </mat-form-field>
         <button
             mat-fab
             color="primary"
             (click)="send()"
-            [disabled]="!userInput.trim() || streaming"
+            [disabled]="!userInput.trim() || streaming()"
         >
             <mat-icon>send</mat-icon>
         </button>
