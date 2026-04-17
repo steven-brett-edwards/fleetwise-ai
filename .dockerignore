@@ -1,0 +1,43 @@
+# Repo-wide Docker build context exclusions.
+# Applies to every `docker build .` run from the repo root.
+
+# .NET build artifacts
+**/bin
+**/obj
+**/*.user
+**/*.db
+**/*.db-shm
+**/*.db-wal
+coveragereport/
+dotnet-coverage/
+**/TestResults/
+
+# Node / Angular artifacts
+**/node_modules
+**/dist
+**/.angular
+**/coverage
+**/.sass-cache
+**/tmp
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Secrets
+**/secrets.json
+**/appsettings.Development.json
+**/.env
+
+# VCS / docs
+.git/
+.github/
+.claude/
+docs/screenshots/
+*.md
+!data/documents/*.md
+
+# OS
+.DS_Store
+Thumbs.db

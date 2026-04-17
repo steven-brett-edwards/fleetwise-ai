@@ -1,0 +1,48 @@
+# Self-contained stack override: adds a containerized Ollama + a one-shot
+# model-puller sidecar so the stack works on a machine with no local Ollama.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.full.yml up
+#
+# First boot pulls qwen2.5:7b (~4.7 GB) and nomic-embed-text (~270 MB) onto
+# the `ollama-models` volume; subsequent boots are fast.
+
+services:
+  api:
+    environment:
+      # Override the default host.docker.internal target so the API
+      # talks to the Ollama service over the compose network.
+      Ollama__Endpoint: http://ollama:11434
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  # One-shot sidecar that pulls the required models and then exits.
+  # The `api` service waits for this to complete before starting, so the
+  # first-request / first-ingest path doesn't race model download.
+  ollama-init:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "OLLAMA_HOST=http://ollama:11434 ollama pull ${OLLAMA_CHAT_MODEL:-qwen2.5:7b} &&
+       OLLAMA_HOST=http://ollama:11434 ollama pull ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}"
+    restart: "no"
+
+volumes:
+  ollama-models:
