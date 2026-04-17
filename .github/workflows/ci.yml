@@ -44,7 +44,7 @@ jobs:
           if-no-files-found: warn
 
   frontend:
-    name: Frontend (Angular 18)
+    name: Frontend (Angular 21)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,11 +60,10 @@ jobs:
           cache-dependency-path: src/fleetwise-client/package-lock.json
 
       - name: Install dependencies
-        # Using `npm install` rather than `npm ci`: npm 11 vs npm 10 resolve
-        # chokidar@5 peer deps differently (angular-eslint transitives), which
-        # makes strict `npm ci` brittle across local/CI. Build reproducibility
-        # is acceptable for this portfolio project.
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
