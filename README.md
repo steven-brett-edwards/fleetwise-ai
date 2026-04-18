@@ -57,7 +57,7 @@ A chat prompt travels from the Angular SPA to `/api/chat/stream`, where the orch
 | AI Orchestration | Microsoft Semantic Kernel 1.74.0                 |
 | AI Abstractions  | Microsoft.Extensions.AI (IChatClient)            |
 | Database         | SQLite (dev) / SQL Server (prod)                 |
-| LLM              | Ollama (local), Groq (hosted demo), Azure OpenAI / OpenAI (optional) |
+| LLM              | Ollama (local), OpenAI (hosted demo), Groq / Azure OpenAI (optional) |
 | Vector Store     | In-Memory (Semantic Kernel)                      |
 | Observability    | .NET Aspire                                      |
 
@@ -143,19 +143,19 @@ The app defaults to `qwen2.5:7b` for chat and `nomic-embed-text` (768 dimensions
 
 The repo ships with a [`render.yaml`](./render.yaml) blueprint that stands up
 the full stack on [Render](https://render.com/)'s free tier using
-[Groq](https://groq.com/) for chat + function calling.
-
-**Why Groq for the hosted demo:** free, no credit card, sub-second
-first-token latency, and its OpenAI-compatible API supports tool calling
-out of the box. The trade-off is that Groq has no embeddings endpoint, so
-the hosted deployment runs chat + the three database plugins (FleetQuery,
-Maintenance, WorkOrder) but skips the DocumentSearch / RAG plugin. Run
-locally against Ollama if you want to see RAG in action.
+[OpenAI](https://platform.openai.com/) for chat (`gpt-4o-mini`) and
+embeddings (`text-embedding-3-small`). The full RAG pipeline is live in the
+hosted demo — the DocumentSearch plugin indexes the fleet SOPs at startup
+and the chat will cite them when you ask a policy question.
 
 ### Prerequisites
 
-1. A [Render account](https://render.com/) (GitHub OAuth, no credit card).
-2. A [Groq API key](https://console.groq.com/keys) (email sign-up, no credit card).
+1. A [Render account](https://render.com/) — GitHub OAuth, no credit card.
+2. An [OpenAI API key](https://platform.openai.com/api-keys). OpenAI requires
+   a payment method on file, but usage for this demo is trivial:
+   `gpt-4o-mini` is $0.15 / $0.60 per million input/output tokens and the
+   embedding pass is a one-shot at startup. Set a monthly hard cap under
+   **Settings → Limits** (e.g. $5) as a safety net.
 
 ### Deploy
 
@@ -164,15 +164,20 @@ locally against Ollama if you want to see RAG in action.
 3. Render reads `render.yaml` and provisions two services: `fleetwise-api`
    (Docker) and `fleetwise-frontend` (static site).
 4. After the first build, open the `fleetwise-api` service → **Environment**
-   and paste your Groq API key into `Groq__ApiKey`. Trigger a manual redeploy
-   so the key takes effect.
-5. Open the frontend URL — the SPA proxies `/api/*` to the API service via a
-   Render rewrite rule, so everything speaks same-origin.
+   and paste your OpenAI API key into `OpenAI__ApiKey`. Trigger a manual
+   redeploy so the key takes effect.
+5. Open the frontend URL — the SPA calls the API at its absolute Render URL
+   with CORS enabled on the API side.
 
 Free-tier web services sleep after 15 minutes of inactivity, so the first
 request after a quiet period takes ~30s to cold-start. SQLite data is
 reseeded from `SeedData.Initialize` on each boot — perfect for a demo,
 not for state that needs to survive a restart.
+
+The `Groq` provider is still wired up in `Program.cs` if you want a
+no-credit-card fallback (fast, free, but no embeddings so RAG is disabled).
+To use it, flip `AiProvider` in `render.yaml` to `Groq` and swap the
+`OpenAI__*` env vars for `Groq__*`.
 
 ## Coming Next
 
