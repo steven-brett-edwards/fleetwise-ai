@@ -2,27 +2,29 @@
 #
 # Deploys two services:
 #   1. fleetwise-api       -- ASP.NET Core 9 API in a Docker container,
-#                             talking to Groq's OpenAI-compatible endpoint
-#                             for chat + function calling. RAG / embeddings
-#                             are disabled in this deployment (Groq has no
-#                             embeddings API); the DocumentSearch plugin
-#                             is skipped at startup.
-#   2. fleetwise-frontend  -- Angular 21 static site, with /api/* routed
-#                             to the API service so the SPA still speaks
-#                             same-origin.
+#                             talking to OpenAI for chat (gpt-4o-mini)
+#                             and embeddings (text-embedding-3-small).
+#                             RAG is fully enabled: the DocumentSearch
+#                             plugin indexes the fleet SOPs at startup
+#                             and the chat can cite them.
+#   2. fleetwise-frontend  -- Angular 21 static site. The SPA talks to
+#                             the API via an absolute URL (CORS enabled
+#                             on the API to permit the cross-origin call).
 #
 # How to deploy:
 #   1. Create a free Render account (github.com OAuth).
 #   2. Dashboard -> New -> Blueprint, pick this repo, pick branch `main`.
 #   3. Render reads this file and spins up both services.
 #   4. After the first deploy, open the fleetwise-api service and paste
-#      your Groq API key into the GROQ_API_KEY environment variable
+#      your OpenAI API key into the OpenAI__ApiKey environment variable
 #      (marked `sync: false` below -- Render will prompt for it).
 #   5. Kick off a manual redeploy of the API so the key takes effect.
 #
-# Cost: both services run on Render's free tier. The API sleeps after
-# 15 minutes of inactivity and takes ~30s to wake back up on the next
-# request -- expected behavior for a portfolio demo.
+# Cost: Render hosting is free tier (API sleeps after 15 min idle, ~30s
+# cold start). OpenAI usage for a portfolio demo runs a few cents per
+# month at most -- gpt-4o-mini is $0.15/M input tokens, embeddings are
+# one-shot at startup. Set a monthly hard cap in the OpenAI dashboard
+# (Settings -> Limits) as a safety net.
 
 services:
   - type: web
@@ -39,12 +41,12 @@ services:
       - key: ASPNETCORE_URLS
         value: http://+:8080
       - key: AiProvider
-        value: Groq
-      - key: Groq__Endpoint
-        value: https://api.groq.com/openai/v1
-      - key: Groq__ChatModel
-        value: openai/gpt-oss-20b
-      - key: Groq__ApiKey
+        value: OpenAI
+      - key: OpenAI__ChatModel
+        value: gpt-4o-mini
+      - key: OpenAI__EmbeddingModel
+        value: text-embedding-3-small
+      - key: OpenAI__ApiKey
         sync: false  # paste the real key in the Render dashboard after first deploy
       - key: ConnectionStrings__DefaultConnection
         value: Data Source=/app/data/db/fleetwise.db
