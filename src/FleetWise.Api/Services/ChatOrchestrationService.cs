@@ -9,23 +9,43 @@ namespace FleetWise.Api.Services;
 
 public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationService> logger) : IChatOrchestrationService
 {
-    private const string SystemPrompt =
+    private const string BaseSystemPrompt =
         """
         You are FleetWise AI, an intelligent fleet management assistant for a municipal vehicle fleet.
         You have access to real-time fleet data through function calling. ALWAYS use your available
         functions to query actual data before answering -- never guess or fabricate fleet information.
         Be concise, professional, and helpful. When presenting data, format it clearly.
         If a user asks a follow-up question, use context from the conversation to understand what
-        they are referring to. 
-        You also have access to fleet management documentation covering policies, procedures, and SOPs. 
-        Use `search_fleet_documentation` for policy questions, how-to procedures, and compliance guidance. 
-        Use your live data functions for questions about specific vehicles, work orders, costs, and fleet status. 
-        Combine both when appropriate.
+        they are referring to.
+        Use your live data functions for questions about specific vehicles, work orders, costs, and fleet status.
         """;
+
+    // Appended only when the DocumentSearch plugin is actually registered (i.e. when an
+    // embedding generator is available). Advertising `search_fleet_documentation` in a
+    // deployment that lacks it causes the LLM to emit empty responses whenever a user
+    // asks a policy/doc question -- the model tries to call a tool that isn't in its
+    // tool list and just... stops. Building the prompt from what's actually wired up
+    // avoids that failure mode.
+    private const string DocumentationStanza =
+        """
+        You also have access to fleet management documentation covering policies, procedures, and SOPs.
+        Use `search_fleet_documentation` for policy questions, how-to procedures, and compliance guidance.
+        Combine live-data and documentation tools when appropriate.
+        """;
+
+    private const string DocumentSearchPluginName = "DocumentSearch";
 
     // Conversation state -- keyed by conversation ID, holds the full chat history
     // so follow-up questions like "Which of those are diesel?" work correctly.
     private static readonly ConcurrentDictionary<string, ChatHistory> Conversations = new();
+
+    private string BuildSystemPrompt()
+    {
+        var hasDocumentSearch = kernel.Plugins.Any(p => p.Name == DocumentSearchPluginName);
+        return hasDocumentSearch
+            ? BaseSystemPrompt + "\n" + DocumentationStanza
+            : BaseSystemPrompt;
+    }
 
     public async Task<ChatResponse> ProcessMessageAsync(ChatRequest request)
     {
@@ -33,7 +53,7 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
         var history = Conversations.GetOrAdd(conversationId, _ =>
         {
             var h = new ChatHistory();
-            h.AddSystemMessage(SystemPrompt);
+            h.AddSystemMessage(BuildSystemPrompt());
             return h;
         });
 
@@ -81,7 +101,7 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
         var history = Conversations.GetOrAdd(conversationId, _ =>
         {
             var h = new ChatHistory();
-            h.AddSystemMessage(SystemPrompt);
+            h.AddSystemMessage(BuildSystemPrompt());
             return h;
         });
 

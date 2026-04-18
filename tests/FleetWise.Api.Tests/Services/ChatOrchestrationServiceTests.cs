@@ -146,6 +146,81 @@ public class ChatOrchestrationServiceTests
         capturedChatHistory!.First().Content.Should().Contain("FleetWise AI");
     }
 
+    // Regression: advertising a tool the kernel doesn't actually expose causes the LLM
+    // to return empty content when the user asks a question that would need it. These
+    // two tests pin that the system prompt is built from the kernel's registered
+    // plugins, not a static string.
+
+    [Fact]
+    public async Task ProcessMessageAsync_WhenDocumentSearchPluginNotRegistered_OmitsDocumentationStanza()
+    {
+        ChatHistory? capturedChatHistory = null;
+        _mockChatCompletionService
+            .Setup(s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
+                (history, _, _, _) => capturedChatHistory = history)
+            .ReturnsAsync(new List<ChatMessageContent>
+            {
+                new(AuthorRole.Assistant, "Hello!")
+            });
+
+        // CreateOrchestrationServiceWithMockedLlm builds a kernel with zero plugins --
+        // this mirrors the Groq deployment where DocumentSearch is skipped.
+        var serviceWithoutDocSearch = CreateOrchestrationServiceWithMockedLlm();
+
+        await serviceWithoutDocSearch.ProcessMessageAsync(new ChatRequest
+        {
+            Message = "Hi",
+            ConversationId = Guid.NewGuid().ToString()
+        });
+
+        var systemPrompt = capturedChatHistory!.First().Content;
+        systemPrompt.Should().NotContain("search_fleet_documentation");
+        systemPrompt.Should().NotContain("fleet management documentation");
+    }
+
+    [Fact]
+    public async Task ProcessMessageAsync_WhenDocumentSearchPluginRegistered_IncludesDocumentationStanza()
+    {
+        ChatHistory? capturedChatHistory = null;
+        _mockChatCompletionService
+            .Setup(s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
+                (history, _, _, _) => capturedChatHistory = history)
+            .ReturnsAsync(new List<ChatMessageContent>
+            {
+                new(AuthorRole.Assistant, "Hello!")
+            });
+
+        // Build a kernel that does have a DocumentSearch plugin registered -- the name
+        // is what the prompt builder keys on, so an empty stub plugin is sufficient.
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddSingleton(_mockChatCompletionService.Object);
+        var kernelWithDocSearch = kernelBuilder.Build();
+        kernelWithDocSearch.ImportPluginFromFunctions(
+            "DocumentSearch",
+            new[] { KernelFunctionFactory.CreateFromMethod(() => "stub", "search_fleet_documentation") });
+
+        var serviceWithDocSearch = new ChatOrchestrationService(kernelWithDocSearch, _mockLogger.Object);
+
+        await serviceWithDocSearch.ProcessMessageAsync(new ChatRequest
+        {
+            Message = "Hi",
+            ConversationId = Guid.NewGuid().ToString()
+        });
+
+        var systemPrompt = capturedChatHistory!.First().Content;
+        systemPrompt.Should().Contain("search_fleet_documentation");
+    }
+
     [Fact]
     public async Task ProcessMessageAsync_WhenSecondMessageInSameConversation_DoesNotDuplicateSystemPrompt()
     {
