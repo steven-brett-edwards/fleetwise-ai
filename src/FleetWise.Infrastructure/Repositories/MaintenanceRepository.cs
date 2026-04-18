@@ -47,33 +47,40 @@ public class MaintenanceRepository(FleetDbContext context) : IMaintenanceReposit
 
     public async Task<List<MaintenanceCostGroup>> GetCostSummaryAsync(string groupBy = "vehicle")
     {
-        var query = context.MaintenanceRecords.Include(mr => mr.Vehicle).AsQueryable();
+        // SQLite's EF provider can't translate GroupBy + Sum(decimal) + OrderByDescending,
+        // so we pull the minimal projection into memory and group client-side. Dataset is
+        // small (hundreds of records); in-memory aggregation is the pragmatic fix.
+        var rows = await context.MaintenanceRecords
+            .Select(mr => new
+            {
+                mr.Cost,
+                mr.PerformedDate,
+                MaintenanceType = mr.MaintenanceType.ToString(),
+                mr.Vehicle.AssetNumber
+            })
+            .ToListAsync();
 
         return groupBy.ToLower() switch
         {
-            "vehicle" => await query
-                .GroupBy(mr => mr.Vehicle.AssetNumber)
-                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(mr => mr.Cost), g.Count()))
-                .OrderByDescending(x => x.TotalCost)
-                .ToListAsync(),
+            "vehicle" => [.. rows
+                .GroupBy(r => r.AssetNumber)
+                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(r => r.Cost), g.Count()))
+                .OrderByDescending(x => x.TotalCost)],
 
-            "type" => await query
-                .GroupBy(mr => mr.MaintenanceType.ToString())
-                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(mr => mr.Cost), g.Count()))
-                .OrderByDescending(x => x.TotalCost)
-                .ToListAsync(),
+            "type" => [.. rows
+                .GroupBy(r => r.MaintenanceType)
+                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(r => r.Cost), g.Count()))
+                .OrderByDescending(x => x.TotalCost)],
 
-            "month" => await query
-                .GroupBy(mr => mr.PerformedDate.Year + "-" + mr.PerformedDate.Month.ToString().PadLeft(2, '0'))
-                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(mr => mr.Cost), g.Count()))
-                .OrderByDescending(x => x.GroupKey)
-                .ToListAsync(),
+            "month" => [.. rows
+                .GroupBy(r => r.PerformedDate.Year + "-" + r.PerformedDate.Month.ToString().PadLeft(2, '0'))
+                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(r => r.Cost), g.Count()))
+                .OrderByDescending(x => x.GroupKey)],
 
-            _ => await query
-                .GroupBy(mr => mr.Vehicle.AssetNumber)
-                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(mr => mr.Cost), g.Count()))
-                .OrderByDescending(x => x.TotalCost)
-                .ToListAsync()
+            _ => [.. rows
+                .GroupBy(r => r.AssetNumber)
+                .Select(g => new MaintenanceCostGroup(g.Key, g.Sum(r => r.Cost), g.Count()))
+                .OrderByDescending(x => x.TotalCost)]
         };
     }
 }

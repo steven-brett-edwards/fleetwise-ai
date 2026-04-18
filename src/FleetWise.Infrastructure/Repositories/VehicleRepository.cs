@@ -76,27 +76,47 @@ public class VehicleRepository(FleetDbContext context) : IVehicleRepository
 
     public async Task<List<VehicleMaintenanceCost>> GetVehiclesByMaintenanceCostAsync(int topN = 10)
     {
-        return await context.MaintenanceRecords
-            .GroupBy(mr => mr.VehicleId)
+        // SQLite's EF provider can't translate GroupBy + Sum(decimal) + OrderByDescending,
+        // so materialize the minimal projection first and aggregate in memory. The record
+        // count is small (hundreds, not millions) so client-side grouping is fine here.
+        var rows = await context.MaintenanceRecords
+            .Select(mr => new { mr.VehicleId, mr.Cost })
+            .ToListAsync();
+
+        var topCosts = rows
+            .GroupBy(r => r.VehicleId)
             .Select(g => new
             {
                 VehicleId = g.Key,
-                TotalCost = g.Sum(mr => mr.Cost),
+                TotalCost = g.Sum(r => r.Cost),
                 RecordCount = g.Count()
             })
             .OrderByDescending(x => x.TotalCost)
             .Take(topN)
-            .Join(context.Vehicles,
-                cost => cost.VehicleId,
-                vehicle => vehicle.Id,
-                (cost, vehicle) => new VehicleMaintenanceCost(
-                    vehicle.Id,
-                    vehicle.AssetNumber,
-                    vehicle.Year,
-                    vehicle.Make,
-                    vehicle.Model,
-                    cost.TotalCost,
-                    cost.RecordCount))
-            .ToListAsync();
+            .ToList();
+
+        if (topCosts.Count == 0)
+            return new List<VehicleMaintenanceCost>();
+
+        var vehicleIds = topCosts.Select(x => x.VehicleId).ToList();
+        var vehicles = await context.Vehicles
+            .Where(v => vehicleIds.Contains(v.Id))
+            .ToDictionaryAsync(v => v.Id);
+
+        return topCosts
+            .Where(x => vehicles.ContainsKey(x.VehicleId))
+            .Select(x =>
+            {
+                var v = vehicles[x.VehicleId];
+                return new VehicleMaintenanceCost(
+                    v.Id,
+                    v.AssetNumber,
+                    v.Year,
+                    v.Make,
+                    v.Model,
+                    x.TotalCost,
+                    x.RecordCount);
+            })
+            .ToList();
     }
 }
