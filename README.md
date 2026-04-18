@@ -4,6 +4,8 @@
 
 > An AI-powered fleet maintenance assistant built with Angular, .NET, and Microsoft Semantic Kernel
 
+**Live demo:** [fleetwise-frontend.onrender.com](https://fleetwise-frontend.onrender.com) — free-tier Render, so the first request after a quiet period takes ~30s to cold-start.
+
 ![FleetWise AI chat demo](docs/screenshots/chat-demo.gif)
 
 <!--
@@ -75,7 +77,8 @@ This project is under active development.
 - [x] Sync and streaming (SSE) chat endpoints
 - [x] Provider-swap architecture (Ollama / Azure OpenAI / OpenAI via config)
 - [x] RAG pipeline with fleet management documentation (vector embeddings + semantic search)
-- [x] 89 unit tests with 100% coverage on all API components
+- [x] 91 API unit tests with 100% coverage on all API components
+- [x] 5 infrastructure integration tests against real SQLite (catches EF-provider translation bugs the in-memory provider misses)
 - [x] Angular chat UI with SSE streaming responses
 - [x] Dashboard with fleet summary, overdue/upcoming maintenance
 - [x] Vehicle list and detail views with filtering
@@ -83,6 +86,7 @@ This project is under active development.
 - [x] Mobile responsive layout (sidenav, dashboard grid, chat bubbles, list filter bars)
 - [x] Frontend unit tests (128 tests, 100% coverage on services + components)
 - [x] CI/CD pipeline (GitHub Actions: parallel backend + frontend jobs with coverage)
+- [x] Deployed to Render (OpenAI-backed hosted demo with live RAG over fleet SOPs)
 
 ## Running Locally
 
@@ -183,7 +187,7 @@ To use it, flip `AiProvider` in `render.yaml` to `Groq` and swap the
 
 **Python edition.** A parallel rewrite using FastAPI, LangGraph, and Anthropic Claude is in progress as a separate repository.
 
-**Production polish.** Integration tests, error handling, and deployment configuration.
+**Chat demo GIF.** Replace the placeholder at the top of this README with a real recording of a streamed response citing live fleet data + SOPs.
 
 ## License
 
