@@ -130,9 +130,7 @@ describe('ChatService', () => {
             complete: () => {
                 // Result -- literal `\n` (two chars) round-trips back to a
                 // real newline character.
-                expect(receivedChunks).toEqual([
-                    'Public Works:\n| Asset | Year |\n|---|---|',
-                ]);
+                expect(receivedChunks).toEqual(['Public Works:\n| Asset | Year |\n|---|---|']);
                 done();
             },
         });
