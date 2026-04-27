@@ -109,6 +109,60 @@ describe('ChatService', () => {
         });
     });
 
+    it('streamMessage_WhenDataContainsEscapedNewlines_UnescapesThem', (done: DoneFn) => {
+        // Setup -- the server escapes inner newlines so they don't terminate
+        // the SSE event mid-frame. The client reverses the escape; without
+        // this, markdown tables and lists arrive as one collapsed line.
+        globalThis.fetch = jasmine
+            .createSpy('fetch')
+            .and.returnValue(
+                Promise.resolve(
+                    createMockSSEResponse([
+                        'data: Public Works:\\n| Asset | Year |\\n|---|---|\n\ndata: [DONE]\n\n',
+                    ])
+                )
+            );
+        const receivedChunks: string[] = [];
+
+        // Act
+        service.streamMessage({ message: 'test' }).subscribe({
+            next: (chunk) => receivedChunks.push(chunk),
+            complete: () => {
+                // Result -- literal `\n` (two chars) round-trips back to a
+                // real newline character.
+                expect(receivedChunks).toEqual([
+                    'Public Works:\n| Asset | Year |\n|---|---|',
+                ]);
+                done();
+            },
+        });
+    });
+
+    it('streamMessage_WhenDataContainsEscapedBackslashes_DecodesAfterNewlinesSoNoDoubleUnescape', (done: DoneFn) => {
+        // Setup -- if the model emits literal `\n` (backslash + n) in a code
+        // block, the encoder doubles the backslash so the wire `\\n` decodes
+        // back to `\n` (two chars), not a newline. Order matters: decode
+        // `\\` last.
+        globalThis.fetch = jasmine
+            .createSpy('fetch')
+            .and.returnValue(
+                Promise.resolve(
+                    createMockSSEResponse(['data: path: C:\\\\temp\n\ndata: [DONE]\n\n'])
+                )
+            );
+        const receivedChunks: string[] = [];
+
+        // Act
+        service.streamMessage({ message: 'test' }).subscribe({
+            next: (chunk) => receivedChunks.push(chunk),
+            complete: () => {
+                // Result
+                expect(receivedChunks).toEqual(['path: C:\\temp']);
+                done();
+            },
+        });
+    });
+
     it('streamMessage_WhenDoneReceived_CompletesObservable', (done: DoneFn) => {
         // Setup
         globalThis.fetch = jasmine

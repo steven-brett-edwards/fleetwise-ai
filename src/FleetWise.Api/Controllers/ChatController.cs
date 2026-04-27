@@ -26,7 +26,16 @@ public class ChatController(IChatOrchestrationService chatService) : ControllerB
 
         await foreach (var chunk in chatService.StreamMessageAsync(request, cancellationToken))
         {
-            await Response.WriteAsync($"data: {chunk}\n\n", cancellationToken);
+            // Escape backslashes first (so `\` doesn't double-unescape on the
+            // client), then \r and \n. Without this, any chunk containing a
+            // newline (which markdown blocks always do) terminates the SSE
+            // event mid-frame and the client drops the trailing half --
+            // collapsing tables and lists onto a single line.
+            var escaped = chunk
+                .Replace("\\", "\\\\")
+                .Replace("\r", "\\r")
+                .Replace("\n", "\\n");
+            await Response.WriteAsync($"data: {escaped}\n\n", cancellationToken);
             await Response.Body.FlushAsync(cancellationToken);
         }
 

@@ -50,7 +50,15 @@ export class ChatService {
                                 subscriber.complete();
                                 return;
                             }
-                            subscriber.next(data);
+                            // Reverse the server-side SSE escape (ChatController.Stream).
+                            // Order matters: decode `\\` last so we don't double-
+                            // unescape something like a literal `\n` inside the
+                            // model's reply.
+                            const unescaped = data
+                                .replace(/\\n/g, '\n')
+                                .replace(/\\r/g, '\r')
+                                .replace(/\\\\/g, '\\');
+                            subscriber.next(unescaped);
                         }
                     }
 

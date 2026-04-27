@@ -107,6 +107,56 @@ public class ChatControllerTests
     }
 
     [Fact]
+    public async Task Stream_WhenChunkContainsNewlines_EscapesThemForFrameIntegrity()
+    {
+        // Setup -- a single chunk containing the kind of multi-line markdown
+        // the agent emits (intro + table). Without escaping, the inner '\n'
+        // would terminate the SSE event mid-frame and the client's parser
+        // would drop the trailing rows -- the bug the markdown rendering
+        // PR initially failed to fix on the wire.
+        const string multilineChunk = "Public Works:\n| Asset | Year |\n|---|---|\n| V-1 | 2020 |";
+        _mockChatOrchestrationService
+            .Setup(s => s.StreamMessageAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncStringStream(multilineChunk));
+
+        var chatControllerWithMockedService = WithHttpContext(CreateChatControllerWithMockedService());
+        var chatRequest = new ChatRequest { Message = "Hi" };
+
+        // Act
+        await chatControllerWithMockedService.Stream(chatRequest, CancellationToken.None);
+
+        // Result -- inner newlines became literal `\n`; only the trailing
+        // `\n\n` separates SSE events.
+        var responseBody = await ReadResponseBody(chatControllerWithMockedService.Response);
+        const string expectedEscaped = "data: Public Works:\\n| Asset | Year |\\n|---|---|\\n| V-1 | 2020 |\n\n";
+        responseBody.Should().Contain(expectedEscaped);
+    }
+
+    [Fact]
+    public async Task Stream_WhenChunkContainsBackslashes_EscapesThemFirstSoClientCanReverseSafely()
+    {
+        // Setup -- if the model literally emits `\n` (two characters: a
+        // backslash followed by `n`, e.g. inside a code block), the encoder
+        // must escape the backslash *first* so the client doesn't decode it
+        // as a newline. Wire format: `\\n` round-trips to the original
+        // `\n` (two chars); a real newline would have been encoded as `\\n`
+        // only via the newline replace, leaving the backslash untouched.
+        _mockChatOrchestrationService
+            .Setup(s => s.StreamMessageAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(CreateAsyncStringStream("path: C:\\temp"));
+
+        var chatControllerWithMockedService = WithHttpContext(CreateChatControllerWithMockedService());
+        var chatRequest = new ChatRequest { Message = "Hi" };
+
+        // Act
+        await chatControllerWithMockedService.Stream(chatRequest, CancellationToken.None);
+
+        // Result
+        var responseBody = await ReadResponseBody(chatControllerWithMockedService.Response);
+        responseBody.Should().Contain("data: path: C:\\\\temp\n\n");
+    }
+
+    [Fact]
     public async Task Stream_WhenStreamCompletes_WritesDoneMarker()
     {
         // Setup
