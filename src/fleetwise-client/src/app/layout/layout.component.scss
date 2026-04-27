@@ -29,6 +29,22 @@ mat-sidenav {
     mat-nav-list {
         padding-top: 8px;
 
+        // Angular Material's mat-list-item template wraps the label in inner
+        // elements that read theme tokens, so a plain `color: white` on the
+        // <a> tag never reaches the rendered text. Override the M3 list
+        // tokens here so the menu items are readable against the navy
+        // background.
+        --mat-list-list-item-label-text-color: rgba(255, 255, 255, 0.8);
+        --mat-list-list-item-leading-icon-color: rgba(255, 255, 255, 0.7);
+        --mat-list-list-item-hover-label-text-color: white;
+        --mat-list-list-item-hover-leading-icon-color: white;
+        --mat-list-list-item-focus-label-text-color: white;
+        --mat-list-list-item-focus-leading-icon-color: white;
+        --mat-list-list-item-hover-state-layer-color: rgba(255, 255, 255, 1);
+        --mat-list-list-item-hover-state-layer-opacity: 0.08;
+        --mat-list-list-item-focus-state-layer-color: rgba(255, 255, 255, 1);
+        --mat-list-list-item-focus-state-layer-opacity: 0.12;
+
         a {
             color: rgba(255, 255, 255, 0.8);
 
@@ -39,6 +55,8 @@ mat-sidenav {
             &.active-link {
                 color: white;
                 background: rgba(255, 255, 255, 0.12);
+                --mat-list-list-item-label-text-color: white;
+                --mat-list-list-item-leading-icon-color: white;
 
                 mat-icon {
                     color: white;
