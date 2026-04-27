@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MarkdownComponent } from 'ngx-markdown';
 import { ChatService } from '../../core/services/chat.service';
 import { ChatMessage } from '../../core/models/chat-message.model';
 
@@ -19,6 +20,7 @@ import { ChatMessage } from '../../core/models/chat-message.model';
         MatButtonModule,
         MatIconModule,
         MatProgressBarModule,
+        MarkdownComponent,
     ],
     templateUrl: './chat.component.html',
     styleUrl: './chat.component.scss',
