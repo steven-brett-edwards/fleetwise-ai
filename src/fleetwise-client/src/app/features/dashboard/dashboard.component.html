@@ -17,7 +17,12 @@
                 </mat-card-content>
             </mat-card>
 
-            <mat-card class="clickable" data-testid="stat-active" routerLink="/vehicles" [queryParams]="{ status: 'Active' }">
+            <mat-card
+                class="clickable"
+                data-testid="stat-active"
+                routerLink="/vehicles"
+                [queryParams]="{ status: 'Active' }"
+            >
                 <mat-card-content>
                     <div class="stat-card-body">
                         <mat-icon class="stat-icon active">check_circle</mat-icon>
@@ -29,7 +34,12 @@
                 </mat-card-content>
             </mat-card>
 
-            <mat-card class="clickable" data-testid="stat-inshop" routerLink="/vehicles" [queryParams]="{ status: 'InShop' }">
+            <mat-card
+                class="clickable"
+                data-testid="stat-inshop"
+                routerLink="/vehicles"
+                [queryParams]="{ status: 'InShop' }"
+            >
                 <mat-card-content>
                     <div class="stat-card-body">
                         <mat-icon class="stat-icon inshop">build</mat-icon>
