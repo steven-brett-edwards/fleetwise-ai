@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { BreakpointObserver, BreakpointState, Breakpoints } from '@angular/cdk/layout';
+import { BreakpointObserver, BreakpointState } from '@angular/cdk/layout';
 import { MatSidenav } from '@angular/material/sidenav';
 import { ActivatedRoute } from '@angular/router';
 import { LayoutComponent } from '../../app/layout/layout.component';
@@ -96,15 +96,12 @@ describe('LayoutComponent', () => {
         expect(() => component.ngOnInit()).not.toThrow();
     });
 
-    it('ngOnInit_WhenCalled_ObservesHandsetAndTabletPortraitBreakpoints', () => {
+    it('ngOnInit_WhenCalled_ObservesDesktopBreakpoint', () => {
         // Act
         component.ngOnInit();
 
         // Result
-        expect(mockBreakpointObserver.observe).toHaveBeenCalledWith([
-            Breakpoints.Handset,
-            Breakpoints.TabletPortrait,
-        ]);
+        expect(mockBreakpointObserver.observe).toHaveBeenCalledWith('(max-width: 1024px)');
     });
 
     it('ngOnDestroy_WhenCalled_CompletesDestroySubject', () => {
