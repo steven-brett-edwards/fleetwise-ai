@@ -9,8 +9,11 @@ import { test, expect } from '../fixtures/app.fixture';
 test.describe('Navigation - desktop', () => {
     test('sidenav is visible by default on a desktop viewport', async ({ nav, page }) => {
         await page.goto('/');
-        // Use a generous timeout: in headless CI the BreakpointObserver may
-        // fire slightly after the page-load event and the sidenav animates open.
+        // In headless Linux CI the browser's initial CSS viewport may not match
+        // the configured 1280×720. Explicitly sizing to a known-desktop width
+        // triggers a real MediaQueryList change event so Angular CDK's
+        // BreakpointObserver re-evaluates against the correct dimensions.
+        await page.setViewportSize({ width: 1280, height: 900 });
         await expect(nav.sidenav).toBeVisible({ timeout: 10_000 });
     });
 
