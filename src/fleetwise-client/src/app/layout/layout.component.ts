@@ -5,7 +5,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -36,7 +36,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.breakpointObserver
-            .observe([Breakpoints.Handset, Breakpoints.TabletPortrait])
+            .observe('(max-width: 1024px)')
             .pipe(takeUntil(this.destroy$))
             .subscribe((result) => {
                 this.isMobile.set(result.matches);
