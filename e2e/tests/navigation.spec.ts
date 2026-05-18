@@ -9,7 +9,9 @@ import { test, expect } from '../fixtures/app.fixture';
 test.describe('Navigation - desktop', () => {
     test('sidenav is visible by default on a desktop viewport', async ({ nav, page }) => {
         await page.goto('/');
-        await expect(nav.sidenav).toBeVisible();
+        // Use a generous timeout: in headless CI the BreakpointObserver may
+        // fire slightly after the page-load event and the sidenav animates open.
+        await expect(nav.sidenav).toBeVisible({ timeout: 10_000 });
     });
 
     test('active route link has active-link class and updates on navigation', async ({
@@ -18,12 +20,18 @@ test.describe('Navigation - desktop', () => {
     }) => {
         await page.goto('/');
 
+        // On mobile the sidenav starts closed; open it before checking link classes.
+        await nav.ensureSidenavOpen();
+
         // Dashboard link should be active on /
         await expect(nav.activeLink('/')).toBeVisible();
 
-        // Navigate to Vehicles
+        // Navigate to Vehicles (ensureSidenavOpen is called internally)
         await nav.navigateToVehicles();
         await expect(page).toHaveURL('/vehicles');
+
+        // Mobile mode closes the sidenav after navigation — re-open to inspect links.
+        await nav.ensureSidenavOpen();
         await expect(nav.activeLink('/vehicles')).toBeVisible();
         // Dashboard link should no longer be active
         await expect(nav.activeLink('/')).not.toBeVisible();
@@ -31,6 +39,8 @@ test.describe('Navigation - desktop', () => {
         // Navigate to AI Chat
         await nav.navigateToChat();
         await expect(page).toHaveURL('/chat');
+
+        await nav.ensureSidenavOpen();
         await expect(nav.activeLink('/chat')).toBeVisible();
         await expect(nav.activeLink('/vehicles')).not.toBeVisible();
     });

@@ -1,4 +1,5 @@
 import type { Page, Locator } from '@playwright/test';
+import { expect } from '@playwright/test';
 
 /**
  * Wraps the Material sidenav / toolbar so every test can navigate
@@ -22,19 +23,37 @@ export class NavigationPage {
         return this.navList.locator(`a[routerLink="${routerLink}"]`);
     }
 
+    /**
+     * Ensures the sidenav is open before interacting with nav links.
+     * On desktop the sidenav is always open so this is a no-op.
+     * On mobile (or in CI environments where the breakpoint fires
+     * unexpectedly) it clicks the hamburger button and waits for the
+     * drawer to open.
+     */
+    async ensureSidenavOpen(): Promise<void> {
+        if (!(await this.isSidenavOpen())) {
+            await this.menuButton.click();
+            await expect(this.sidenav).toHaveClass(/mat-drawer-opened/, { timeout: 5_000 });
+        }
+    }
+
     async navigateToDashboard(): Promise<void> {
+        await this.ensureSidenavOpen();
         await this.navLink('/').click();
     }
 
     async navigateToChat(): Promise<void> {
+        await this.ensureSidenavOpen();
         await this.navLink('/chat').click();
     }
 
     async navigateToVehicles(): Promise<void> {
+        await this.ensureSidenavOpen();
         await this.navLink('/vehicles').click();
     }
 
     async navigateToWorkOrders(): Promise<void> {
+        await this.ensureSidenavOpen();
         await this.navLink('/work-orders').click();
     }
 

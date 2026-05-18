@@ -3,8 +3,7 @@ import { test, expect } from '../fixtures/app.fixture';
 test.describe('Vehicle List', () => {
     test('loads all 35 vehicles unfiltered', async ({ vehicleList }) => {
         await vehicleList.goto();
-        await vehicleList.waitForLoad();
-        expect(await vehicleList.getRowCount()).toBe(35);
+        await expect(vehicleList.rows).toHaveCount(35, { timeout: 15_000 });
     });
 
     test('status filter "Active" shows 29 rows with correct badges', async ({ vehicleList, page }) => {
@@ -14,8 +13,7 @@ test.describe('Vehicle List', () => {
 
         // URL updates to include the query param
         await expect(page).toHaveURL(/status=Active/);
-        await vehicleList.waitForLoad();
-        expect(await vehicleList.getRowCount()).toBe(29);
+        await expect(vehicleList.rows).toHaveCount(29, { timeout: 10_000 });
 
         // Every visible status badge should be status-active
         const badges = page.locator('tr.mat-mdc-row span.status-badge');
@@ -30,8 +28,7 @@ test.describe('Vehicle List', () => {
         await vehicleList.waitForLoad();
         await vehicleList.selectStatus('InShop');
         await expect(page).toHaveURL(/status=InShop/);
-        await vehicleList.waitForLoad();
-        expect(await vehicleList.getRowCount()).toBe(4);
+        await expect(vehicleList.rows).toHaveCount(4, { timeout: 10_000 });
     });
 
     test('fuel type filter "Electric" shows 3 rows', async ({ vehicleList, page }) => {
@@ -39,16 +36,14 @@ test.describe('Vehicle List', () => {
         await vehicleList.waitForLoad();
         await vehicleList.selectFuelType('Electric');
         await expect(page).toHaveURL(/fuelType=Electric/);
-        await vehicleList.waitForLoad();
         // Vehicles 33 (Bolt EV), 34 (E-Transit), 35 (Tesla Model 3)
-        expect(await vehicleList.getRowCount()).toBe(3);
+        await expect(vehicleList.rows).toHaveCount(3, { timeout: 10_000 });
     });
 
     test('combined query params filter works (Active + Electric)', async ({ vehicleList }) => {
         // All 3 EVs are Active, so combined filter still gives 3 rows
         await vehicleList.goto({ status: 'Active', fuelType: 'Electric' });
-        await vehicleList.waitForLoad();
-        expect(await vehicleList.getRowCount()).toBe(3);
+        await expect(vehicleList.rows).toHaveCount(3, { timeout: 10_000 });
     });
 
     test('Clear Filters button is hidden with no filters, appears after filtering, then resets', async ({
@@ -66,8 +61,7 @@ test.describe('Vehicle List', () => {
 
         await vehicleList.clearFilters();
         await expect(page).toHaveURL('/vehicles');
-        await vehicleList.waitForLoad();
-        expect(await vehicleList.getRowCount()).toBe(35);
+        await expect(vehicleList.rows).toHaveCount(35, { timeout: 10_000 });
     });
 
     test('clicking a row navigates to vehicle detail', async ({ vehicleList, page }) => {
@@ -94,8 +88,11 @@ test.describe('Vehicle Detail', () => {
     test('maintenance history tab shows records for vehicle 1', async ({ vehicleDetail }) => {
         await vehicleDetail.goto(1);
         await vehicleDetail.waitForLoad();
+        await vehicleDetail.clickMaintenanceTab();
         // Vehicle 1 has 15 maintenance records (IDs 1-15)
-        expect(await vehicleDetail.getMaintenanceRowCount()).toBe(15);
+        await expect(
+            vehicleDetail.tabGroup.locator('.mat-mdc-tab-body-active tr.mat-mdc-row'),
+        ).toHaveCount(15, { timeout: 10_000 });
     });
 
     test('work orders tab shows work orders for vehicle 1', async ({ vehicleDetail, page }) => {

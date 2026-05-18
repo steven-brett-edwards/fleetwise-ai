@@ -20,11 +20,20 @@ export default defineConfig({
     projects: [
         {
             name: 'chromium',
-            use: { ...devices['Desktop Chrome'] },
+            use: {
+                ...devices['Desktop Chrome'],
+                // Explicit screen dimensions ensure window.screen is unambiguously
+                // desktop-sized in headless Linux CI, preventing Angular CDK's
+                // BreakpointObserver from mis-classifying the viewport as mobile.
+                screen: { width: 1920, height: 1080 },
+            },
         },
         {
             name: 'firefox',
-            use: { ...devices['Desktop Firefox'] },
+            use: {
+                ...devices['Desktop Firefox'],
+                screen: { width: 1920, height: 1080 },
+            },
         },
         {
             name: 'mobile-chrome',

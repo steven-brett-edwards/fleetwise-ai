@@ -3,8 +3,7 @@ import { test, expect } from '../fixtures/app.fixture';
 test.describe('Work Order List', () => {
     test('loads all 36 work orders unfiltered', async ({ workOrderList }) => {
         await workOrderList.goto();
-        await workOrderList.waitForLoad();
-        expect(await workOrderList.getRowCount()).toBe(36);
+        await expect(workOrderList.rows).toHaveCount(36, { timeout: 15_000 });
     });
 
     test('status filter "Open" shows 8 rows and updates URL', async ({
@@ -15,9 +14,8 @@ test.describe('Work Order List', () => {
         await workOrderList.waitForLoad();
         await workOrderList.selectStatus('Open');
         await expect(page).toHaveURL(/status=Open/);
-        await workOrderList.waitForLoad();
         // Open WOs: IDs 20, 30, 31, 32, 33, 34, 35, 36
-        expect(await workOrderList.getRowCount()).toBe(8);
+        await expect(workOrderList.rows).toHaveCount(8, { timeout: 10_000 });
     });
 
     test('status filter "Completed" shows 18 rows', async ({ workOrderList, page }) => {
@@ -25,8 +23,7 @@ test.describe('Work Order List', () => {
         await workOrderList.waitForLoad();
         await workOrderList.selectStatus('Completed');
         await expect(page).toHaveURL(/status=Completed/);
-        await workOrderList.waitForLoad();
-        expect(await workOrderList.getRowCount()).toBe(18);
+        await expect(workOrderList.rows).toHaveCount(18, { timeout: 10_000 });
     });
 
     test('Clear Filter button resets to all 36 work orders', async ({
@@ -40,8 +37,7 @@ test.describe('Work Order List', () => {
 
         await workOrderList.clearFilter();
         await expect(page).toHaveURL('/work-orders');
-        await workOrderList.waitForLoad();
-        expect(await workOrderList.getRowCount()).toBe(36);
+        await expect(workOrderList.rows).toHaveCount(36, { timeout: 10_000 });
     });
 
     test('clicking a row navigates to work order detail', async ({ workOrderList, page }) => {
