@@ -47,7 +47,7 @@
     <mat-sidenav-content>
         <mat-toolbar color="primary">
             @if (isMobile()) {
-                <button mat-icon-button (click)="sidenav.toggle()">
+                <button mat-icon-button data-testid="menu-toggle" (click)="sidenav.toggle()">
                     <mat-icon>menu</mat-icon>
                 </button>
             }
