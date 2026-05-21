@@ -34,6 +34,9 @@ tmp/
 .env.local
 appsettings.*.local.json
 
+## Azure Functions local dev settings (contains connection strings, never deploy)
+local.settings.json
+
 ## Test coverage
 TestResults/
 coveragereport/
@@ -48,3 +51,6 @@ Thumbs.db
 
 ## VS Code
 .vscode/
+
+## Claude Code
+CLAUDE.md
