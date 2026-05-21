@@ -48,6 +48,8 @@ services:
         value: text-embedding-3-small
       - key: OpenAI__ApiKey
         sync: false  # paste the real key in the Render dashboard after first deploy
+      - key: APPLICATIONINSIGHTS_CONNECTION_STRING
+        sync: false  # paste from Azure portal: App Insights resource -> Overview -> Connection String
       - key: ConnectionStrings__DefaultConnection
         value: Data Source=/app/data/db/fleetwise.db
       # CORS: allow the deployed frontend origin (and localhost for smoke tests).

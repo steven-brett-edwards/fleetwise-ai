@@ -1,4 +1,5 @@
 using System.ClientModel;
+using Azure.Identity;
 using FleetWise.Api.Plugins;
 using FleetWise.Api.Services;
 using FleetWise.Infrastructure.Data;
@@ -25,9 +26,14 @@ builder.Services.AddScoped<IPartRepository, PartRepository>();
 // Vector store -- singleton because it holds all document embeddings in memory for the app lifetime
 builder.Services.AddSingleton<InMemoryVectorStore>();
 
+// Application Insights -- reads ConnectionString from config or APPLICATIONINSIGHTS_CONNECTION_STRING
+// env var. No-ops silently when neither is set, so local dev and CI are unaffected.
+builder.Services.AddApplicationInsightsTelemetry();
+
 // AI Provider -- reads "AiProvider" from config to decide which LLM backend to use.
 // All three providers use the OpenAI connector -- Ollama exposes an OpenAI-compatible API.
 var aiProvider = builder.Configuration["AiProvider"] ?? "Ollama";
+var useAzureDefaultCredential = builder.Configuration.GetValue<bool>("AzureOpenAI:UseDefaultCredential");
 
 // Embedding generator -- registered on the app container (not just the Kernel) so that
 // both the Kernel factory and the startup ingestion service can resolve it.
@@ -51,12 +57,22 @@ switch (aiProvider)
         var azureEmbedEndpoint = builder.Configuration["AzureOpenAI:Endpoint"]
             ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required");
         var azureEmbedModel = builder.Configuration["AzureOpenAI:EmbeddingModel"] ?? "text-embedding-3-small";
-        var azureEmbedKey = builder.Configuration["AzureOpenAI:ApiKey"]
-            ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required");
-        builder.Services.AddAzureOpenAIEmbeddingGenerator(
-            deploymentName: azureEmbedModel,
-            endpoint: azureEmbedEndpoint,
-            apiKey: azureEmbedKey);
+        if (useAzureDefaultCredential)
+        {
+            builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                azureEmbedModel,
+                azureEmbedEndpoint,
+                new DefaultAzureCredential());
+        }
+        else
+        {
+            var azureEmbedKey = builder.Configuration["AzureOpenAI:ApiKey"]
+                ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required");
+            builder.Services.AddAzureOpenAIEmbeddingGenerator(
+                deploymentName: azureEmbedModel,
+                endpoint: azureEmbedEndpoint,
+                apiKey: azureEmbedKey);
+        }
         break;
     case "OpenAI":
         var openAiEmbedModel = builder.Configuration["OpenAI:EmbeddingModel"] ?? "text-embedding-3-small";
@@ -90,12 +106,24 @@ builder.Services.AddScoped(serviceProvider =>
             var azureEndpoint = builder.Configuration["AzureOpenAI:Endpoint"]
                 ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required when AiProvider is AzureOpenAI");
             var azureModel = builder.Configuration["AzureOpenAI:ChatModel"] ?? "gpt-4o-mini";
-            var azureApiKey = builder.Configuration["AzureOpenAI:ApiKey"]
-                ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required when AiProvider is AzureOpenAI");
-            kernelBuilder.AddAzureOpenAIChatCompletion(
-                deploymentName: azureModel,
-                endpoint: azureEndpoint,
-                apiKey: azureApiKey);
+            if (useAzureDefaultCredential)
+            {
+                // UseDefaultCredential=true: managed identity in Azure, az login locally.
+                // No API key needed -- DefaultAzureCredential handles the token exchange.
+                kernelBuilder.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureModel,
+                    endpoint: azureEndpoint,
+                    credentials: new DefaultAzureCredential());
+            }
+            else
+            {
+                var azureApiKey = builder.Configuration["AzureOpenAI:ApiKey"]
+                    ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required when AiProvider is AzureOpenAI");
+                kernelBuilder.AddAzureOpenAIChatCompletion(
+                    deploymentName: azureModel,
+                    endpoint: azureEndpoint,
+                    apiKey: azureApiKey);
+            }
             break;
 
         case "OpenAI":
