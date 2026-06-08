@@ -208,9 +208,9 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
                     yield break;
                 }
 
-                if (chunk is not null && !string.IsNullOrEmpty(chunk.Content))
+                if (!string.IsNullOrEmpty(chunk!.Content))
                 {
-                    yield return chunk.Content;
+                    yield return chunk.Content!;
                 }
             }
         }
