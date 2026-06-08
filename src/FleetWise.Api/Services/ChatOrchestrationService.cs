@@ -170,12 +170,13 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
             startupError = ex.Message;
         }
 
-        if (startupError is not null || enumerator is null)
+        if (startupError is not null)
         {
-            yield return $"\n\n*An error occurred: {startupError ?? "unable to start stream"}*";
+            yield return $"\n\n*An error occurred: {startupError}*";
             yield break;
         }
 
+        var e = enumerator!;
         try
         {
             while (true)
@@ -184,11 +185,11 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
                 string? midStreamError = null;
                 try
                 {
-                    if (!await enumerator.MoveNextAsync())
+                    if (!await e.MoveNextAsync())
                     {
                         yield break;
                     }
-                    chunk = enumerator.Current;
+                    chunk = e.Current;
                 }
                 catch (OperationCanceledException)
                 {
@@ -207,15 +208,15 @@ public class ChatOrchestrationService(Kernel kernel, ILogger<ChatOrchestrationSe
                     yield break;
                 }
 
-                if (chunk is not null && !string.IsNullOrEmpty(chunk.Content))
+                if (!string.IsNullOrEmpty(chunk!.Content))
                 {
-                    yield return chunk.Content;
+                    yield return chunk.Content!;
                 }
             }
         }
         finally
         {
-            await enumerator.DisposeAsync();
+            await e.DisposeAsync();
         }
     }
 }

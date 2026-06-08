@@ -37,10 +37,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, content)
-            });
+            ]);
     }
 
     private void SetupMockStreamingLlmToReturn(params string?[] chunks)
@@ -125,10 +125,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<CancellationToken>()))
             .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
                 (history, _, _, _) => capturedChatHistory = history)
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Hello!")
-            });
+            ]);
 
         var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
         var requestForNewConversation = new ChatRequest
@@ -142,8 +142,8 @@ public class ChatOrchestrationServiceTests
 
         // Result
         capturedChatHistory.Should().NotBeNull();
-        (capturedChatHistory!.First().Role == AuthorRole.System).Should().BeTrue();
-        capturedChatHistory!.First().Content.Should().Contain("FleetWise AI");
+        (capturedChatHistory.First().Role == AuthorRole.System).Should().BeTrue();
+        capturedChatHistory.First().Content.Should().Contain("FleetWise AI");
     }
 
     // Regression: advertising a tool the kernel doesn't actually expose causes the LLM
@@ -163,10 +163,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<CancellationToken>()))
             .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
                 (history, _, _, _) => capturedChatHistory = history)
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Hello!")
-            });
+            ]);
 
         // CreateOrchestrationServiceWithMockedLlm builds a kernel with zero plugins --
         // this mirrors the Groq deployment where DocumentSearch is skipped.
@@ -195,10 +195,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<CancellationToken>()))
             .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
                 (history, _, _, _) => capturedChatHistory = history)
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Hello!")
-            });
+            ]);
 
         // Build a kernel that does have a DocumentSearch plugin registered -- the name
         // is what the prompt builder keys on, so an empty stub plugin is sufficient.
@@ -239,10 +239,10 @@ public class ChatOrchestrationServiceTests
                     callCount++;
                     if (callCount == 2) capturedChatHistoryOnSecondCall = history;
                 })
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Response")
-            });
+            ]);
 
         var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
         var sharedConversationId = Guid.NewGuid().ToString();
@@ -255,7 +255,7 @@ public class ChatOrchestrationServiceTests
 
         // Result
         capturedChatHistoryOnSecondCall.Should().NotBeNull();
-        var systemMessageCount = capturedChatHistoryOnSecondCall!
+        var systemMessageCount = capturedChatHistoryOnSecondCall
             .Count(m => m.Role == AuthorRole.System);
         systemMessageCount.Should().Be(1);
     }
@@ -319,10 +319,10 @@ public class ChatOrchestrationServiceTests
                     };
                     history.Add(new ChatMessageContent(AuthorRole.Assistant, functionCallItems));
                 })
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "The fleet has 35 vehicles.")
-            });
+            ]);
 
         var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
         var requestTriggeringFunctionCall = new ChatRequest
@@ -424,10 +424,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<CancellationToken>()))
             .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
                 (history, _, _, _) => capturedChatHistoryOnFollowUp = history)
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Follow-up response")
-            });
+            ]);
 
         var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
         var sharedConversationId = Guid.NewGuid().ToString();
@@ -441,7 +441,7 @@ public class ChatOrchestrationServiceTests
 
         // Result -- the concatenated streamed response should be in conversation history
         capturedChatHistoryOnFollowUp.Should().NotBeNull();
-        var assistantMessages = capturedChatHistoryOnFollowUp!
+        var assistantMessages = capturedChatHistoryOnFollowUp
             .Where(m => m.Role == AuthorRole.Assistant)
             .Select(m => m.Content)
             .ToList();
@@ -475,8 +475,8 @@ public class ChatOrchestrationServiceTests
 
         // Result
         capturedChatHistory.Should().NotBeNull();
-        (capturedChatHistory!.First().Role == AuthorRole.System).Should().BeTrue();
-        capturedChatHistory!.First().Content.Should().Contain("FleetWise AI");
+        (capturedChatHistory.First().Role == AuthorRole.System).Should().BeTrue();
+        capturedChatHistory.First().Content.Should().Contain("FleetWise AI");
     }
 
     [Fact]
@@ -534,10 +534,10 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<CancellationToken>()))
             .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>(
                 (history, _, _, _) => capturedChatHistory = history)
-            .ReturnsAsync(new List<ChatMessageContent>
-            {
+            .ReturnsAsync(
+            [
                 new(AuthorRole.Assistant, "Follow-up")
-            });
+            ]);
 
         var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
         var requestWithNoConversationId = new ChatRequest { Message = "Hi" };
@@ -556,5 +556,109 @@ public class ChatOrchestrationServiceTests
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    // ── SafeStreamChunksAsync error paths ──────────────────────────
+
+    [Fact]
+    public async Task StreamMessageAsync_WhenLlmThrowsOperationCanceledOnStartup_PropagatesCancellation()
+    {
+        // Setup -- mock throws OperationCanceledException synchronously when called,
+        // exercising the catch (OperationCanceledException) { throw; } re-throw path
+        // in SafeStreamChunksAsync (startup catch, lines 163-165).
+        _mockChatCompletionService
+            .Setup(s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new OperationCanceledException("startup cancelled"));
+
+        var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
+        var streamingRequestToCancelledLlm = new ChatRequest
+        {
+            Message = "Hi",
+            ConversationId = Guid.NewGuid().ToString()
+        };
+
+        // Act + Result -- OperationCanceledException is re-thrown, not converted to an error chunk
+        var streamingAction = async () =>
+        {
+            await foreach (var _ in orchestrationServiceWithMockedLlm.StreamMessageAsync(streamingRequestToCancelledLlm)) { }
+        };
+
+        await streamingAction.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task StreamMessageAsync_WhenLlmThrowsOnStartup_YieldsErrorChunk()
+    {
+        // Setup -- mock throws synchronously when called, triggering the startup catch block
+        _mockChatCompletionService
+            .Setup(s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(new InvalidOperationException("LLM service unavailable"));
+
+        var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
+        var streamingRequestToFailingLlm = new ChatRequest
+        {
+            Message = "Hi",
+            ConversationId = Guid.NewGuid().ToString()
+        };
+
+        // Act
+        var receivedChunks = new List<string>();
+        await foreach (var chunk in orchestrationServiceWithMockedLlm.StreamMessageAsync(streamingRequestToFailingLlm))
+        {
+            receivedChunks.Add(chunk);
+        }
+
+        // Result
+        receivedChunks.Should().HaveCount(1);
+        receivedChunks[0].Should().Contain("An error occurred");
+        receivedChunks[0].Should().Contain("LLM service unavailable");
+    }
+
+    [Fact]
+    public async Task StreamMessageAsync_WhenLlmThrowsMidStream_YieldsPartialContentThenErrorChunk()
+    {
+        // Setup -- returns an async enumerable that yields one chunk then throws mid-enumeration
+        _mockChatCompletionService
+            .Setup(s => s.GetStreamingChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(CreateStreamingChunksThenThrow());
+
+        var orchestrationServiceWithMockedLlm = CreateOrchestrationServiceWithMockedLlm();
+        var streamingRequestThatFailsMidStream = new ChatRequest
+        {
+            Message = "Hi",
+            ConversationId = Guid.NewGuid().ToString()
+        };
+
+        // Act
+        var receivedChunks = new List<string>();
+        await foreach (var chunk in orchestrationServiceWithMockedLlm.StreamMessageAsync(streamingRequestThatFailsMidStream))
+        {
+            receivedChunks.Add(chunk);
+        }
+
+        // Result
+        receivedChunks.Should().HaveCount(2);
+        receivedChunks[0].Should().Be("Partial response");
+        receivedChunks[1].Should().Contain("An error occurred mid-stream");
+        receivedChunks[1].Should().Contain("Connection lost mid-stream");
+    }
+
+    private static async IAsyncEnumerable<StreamingChatMessageContent> CreateStreamingChunksThenThrow()
+    {
+        yield return new StreamingChatMessageContent(AuthorRole.Assistant, "Partial response");
+        await Task.Yield();
+        throw new InvalidOperationException("Connection lost mid-stream");
     }
 }

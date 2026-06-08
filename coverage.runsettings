@@ -5,8 +5,7 @@
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
-          <ExcludeByFile>**/Program.cs</ExcludeByFile>
-          <Exclude>[FleetWise.*.Tests]*</Exclude>
+          <Exclude>[FleetWise.*.Tests]*,[FleetWise.Functions]FleetWise.Functions.*Executor*,[FleetWise.Functions]FleetWise.Functions.*MetadataProvider*,[FleetWise.Api]*Program*,[FleetWise.Functions]*Program*,[FleetWise.Infrastructure]FleetWise.Infrastructure.Data.SeedData</Exclude>
         </Configuration>
       </DataCollector>
     </DataCollectors>

@@ -7,10 +7,6 @@ namespace FleetWise.Api.Models;
 /// Each chunk is a section of a source document, embedded as a 768-dimensional vector
 /// for semantic similarity search.
 /// </summary>
-/// <remarks>
-/// This lives in the Api project (not Domain) because it requires SK vector store attributes.
-/// The Domain project's DocumentChunk entity remains attribute-free by design.
-/// </remarks>
 public class DocumentChunkRecord
 {
     [VectorStoreKey]
