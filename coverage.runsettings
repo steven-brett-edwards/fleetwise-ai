@@ -6,7 +6,7 @@
         <Configuration>
           <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
           <ExcludeByFile>**/Program.cs</ExcludeByFile>
-          <Exclude>[FleetWise.*.Tests]*</Exclude>
+          <Exclude>[FleetWise.*.Tests]*,[FleetWise.Functions]FleetWise.Functions.*Executor*,[FleetWise.Functions]FleetWise.Functions.*MetadataProvider*</Exclude>
         </Configuration>
       </DataCollector>
     </DataCollectors>
