@@ -14,15 +14,18 @@ public class MaintenanceRepositoryTests : SqliteRepositoryTestBase
             NewVehicle(2, "V-002", currentMileage: 98_000)
         );
 
+        Context.WorkOrders.Add(NewWorkOrder(1, vehicleId: 1, "WO-0001"));
+
         Context.MaintenanceRecords.AddRange(
-            NewMaintenanceRecord(1, vehicleId: 1, performedDate: new DateTime(2026, 3, 1)),
+            NewMaintenanceRecord(1, vehicleId: 1, performedDate: new DateTime(2026, 3, 1), workOrderId: 1),
             NewMaintenanceRecord(2, vehicleId: 1, performedDate: new DateTime(2026, 1, 1)),
             NewMaintenanceRecord(3, vehicleId: 2, performedDate: new DateTime(2026, 2, 15))
         );
 
         Context.MaintenanceSchedules.AddRange(
-            // Overdue by date: NextDueDate in the past
-            NewMaintenanceSchedule(1, vehicleId: 1, nextDueDate: DateTime.UtcNow.AddDays(-10)),
+            // Overdue by date: NextDueDate in the past — includes interval metadata
+            NewMaintenanceSchedule(1, vehicleId: 1, nextDueDate: DateTime.UtcNow.AddDays(-10),
+                intervalMiles: 5_000, intervalDays: 90),
             // Overdue by mileage: vehicle at 60000, NextDueMileage = 55000
             NewMaintenanceSchedule(2, vehicleId: 1, nextDueMileage: 55_000),
             // Upcoming by date: within 30 days from now
@@ -50,6 +53,10 @@ public class MaintenanceRepositoryTests : SqliteRepositoryTestBase
         vehicleOneRecords.Should().HaveCount(2);
         vehicleOneRecords.Should().AllSatisfy(r => r.VehicleId.Should().Be(1));
         vehicleOneRecords.Select(r => r.PerformedDate).Should().BeInDescendingOrder();
+
+        var linked = vehicleOneRecords.Single(r => r.WorkOrderId.HasValue);
+        linked.WorkOrderId.Should().Be(1);
+        linked.WorkOrder!.WorkOrderNumber.Should().Be("WO-0001");
     }
 
     // ── GetOverdueSchedulesAsync ───────────────────────────────────
@@ -69,6 +76,10 @@ public class MaintenanceRepositoryTests : SqliteRepositoryTestBase
         overdueSchedules.Should().Contain(s => s.Id == 1, "schedule 1 is overdue by date");
         overdueSchedules.Should().Contain(s => s.Id == 2, "schedule 2 is overdue by mileage");
         overdueSchedules.Should().NotContain(s => s.Id == 5, "schedule 5 is not due for 90 days");
+
+        var withInterval = overdueSchedules.Single(s => s.Id == 1);
+        withInterval.IntervalMiles.Should().Be(5_000);
+        withInterval.IntervalDays.Should().Be(90);
     }
 
     // ── GetUpcomingSchedulesAsync ──────────────────────────────────

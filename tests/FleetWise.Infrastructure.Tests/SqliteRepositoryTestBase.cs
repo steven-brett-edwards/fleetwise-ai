@@ -89,10 +89,12 @@ public abstract class SqliteRepositoryTestBase : IDisposable
         int id,
         int vehicleId,
         DateTime performedDate,
-        decimal cost = 500m) => new()
+        decimal cost = 500m,
+        int? workOrderId = null) => new()
     {
         Id = id,
         VehicleId = vehicleId,
+        WorkOrderId = workOrderId,
         MaintenanceType = MaintenanceType.OilChange,
         PerformedDate = performedDate,
         MileageAtService = 40_000,
@@ -105,13 +107,17 @@ public abstract class SqliteRepositoryTestBase : IDisposable
         int id,
         int vehicleId,
         DateTime? nextDueDate = null,
-        int? nextDueMileage = null) => new()
+        int? nextDueMileage = null,
+        int? intervalMiles = null,
+        int? intervalDays = null) => new()
     {
         Id = id,
         VehicleId = vehicleId,
         MaintenanceType = MaintenanceType.OilChange,
         NextDueDate = nextDueDate,
-        NextDueMileage = nextDueMileage
+        NextDueMileage = nextDueMileage,
+        IntervalMiles = intervalMiles,
+        IntervalDays = intervalDays
     };
 
     public void Dispose()
