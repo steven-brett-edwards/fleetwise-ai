@@ -145,6 +145,17 @@ public class VehicleRepositoryTests : SqliteRepositoryTestBase
     }
 
     [Fact]
+    public async Task SearchAsync_WithFuelTypeFilter_ReturnsOnlyMatchingVehicles()
+    {
+        // Act
+        var electricVehicles = await _repository.SearchAsync(fuelType: FuelType.Electric);
+
+        // Result
+        electricVehicles.Should().HaveCount(1);
+        electricVehicles[0].AssetNumber.Should().Be("V-003");
+    }
+
+    [Fact]
     public async Task SearchAsync_WithMultipleFilters_ReturnsOnlyMatchingVehicles()
     {
         // Act
